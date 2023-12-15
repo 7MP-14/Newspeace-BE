@@ -11,7 +11,8 @@ from datetime import datetime, timedelta
 def crawling(category, start_time):
     items = []
     i = 1
-    while i >= 1:
+    # while i >= 1:
+    while 3 > i:  # test용 반복 (반복 횟수를 줄였음)
         url = f'https://news.daum.net/breakingnews/{category}?page={i+1}'   # i번째 페이지
 
         response = requests.get(url)  
@@ -24,25 +25,14 @@ def crawling(category, start_time):
             time = element.select_one('.cont_thumb > .tit_thumb > .info_news > .info_time').text
             # 기준 시간(start_time) 이후에 작성된 기사인 경우
             if time >= start_time:
-                # 이미지가 있는 경우
-                try:
-                    items.append({
-                    'category': category,
-                    'title': element.select_one('.cont_thumb > .tit_thumb > .link_txt').text,
-                    'link': link,
-                    'img': element.select_one('.link_thumb > .thumb_g ').get('src'), # 프로토콜을 추가해줌
-                    'time': time,
-                    'detail': detail(link)
-                    })
-                # 이미지가 없는 경우
-                except:
-                    items.append({
-                    'category': category,
-                    'title': element.select_one('.cont_thumb > .tit_thumb > .link_txt').text,
-                    'link': element.select_one('.cont_thumb > .tit_thumb > .link_txt').get('href'),
-                    'time': time,
-                    'detail': detail(link)
-                    })
+                  items.append({
+                  'category': category,
+                  'title': element.select_one('.cont_thumb > .tit_thumb > .link_txt').text,
+                  'link': link,
+                  'img': detail(link)[1],
+                  'time': time,
+                  'detail': detail(link)[0],
+                  })
             # 기준 시간(start_time) 이전에 작성된 기사인 경우
             else:
                 stop_check = True
@@ -60,12 +50,22 @@ def crawling(category, start_time):
 def detail(url):
   response = requests.get(url)
   dom = BeautifulSoup(response.text, 'html.parser')
-  elements = dom.select('#mArticle > div.news_view.fs_type1 > div.article_view > section > p')[:-1]
+  elements = dom.select('#mArticle > div.news_view.fs_type1 > div.article_view > section')[0]
+  element = elements.find_all(attrs={'dmcf-ptype':'general'})
+  
   detail = ''
-  for i in elements:
-    detail += i.text
+  for i in element:
+    detail += i.text + ' '
 
-  return detail
+  try:
+    img = elements.select_one('figure > p > img').get('src')
+  except:
+    try:
+      img = elements.find('iframe').get('poster')
+    except:
+      img = None
+
+  return detail, img
 
 category_list = ['society', 'politics', 'economic', 'foreign', 'culture', 'entertain', 'sports', 'digital']
 now_time = datetime.now()                       # 현재 시각
