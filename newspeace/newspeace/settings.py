@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "accounts",
+    "board",
 ]
 
 MIDDLEWARE = [
@@ -55,7 +56,7 @@ ROOT_URLCONF = "newspeace.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [f'{BASE_DIR}/templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -122,3 +123,15 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# auth login,logout 환경 변수 설정해주기
+LOGIN_REDIRECT_URL="/"
+
+LOGOUT_REDIRECT_URL="/"
+
+LOGIN_URL = 'login'
+LOGOUT_URL = 'logout'
+
+# 유저모델을 기본적인 auth에서 가져오는 것이 아니라,
+# 내가 만든 앱(accounts)에 있는 User모델을 사용해달라는 의미
+AUTH_USER_MODEL = 'accounts.User'
