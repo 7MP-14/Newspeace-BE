@@ -35,11 +35,12 @@
             </table>
         </div>
     </div>
-
-    <!-- 새 글 작성 버튼 -->
-    <div class="container">
-        <div class="write-button-container">
-            <a href="{% url 'board:write' %}" class="btn btn-dark">새 글 작성</a>
+    {% if user.is_admin %}
+        <!-- 새 글 작성 버튼 -->
+        <div class="container">
+            <div class="write-button-container">
+                <a href="{% url 'board:write' %}" class="btn btn-dark">새 글 작성</a>
+            </div>
         </div>
-    </div>
+    {% endif %}
 </section>
