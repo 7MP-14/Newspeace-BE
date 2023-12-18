@@ -5,8 +5,20 @@ from .models import *
 # Create your views here.
 
 def detail(request, category, keyword):
+    
     category = category.split('+')
-    articles = Article.objects.filter(category__in=category, keyword__in=keyword)
+    if len(category) == 1:
+        category = list(category)
+        
+    keyword = keyword.split('+')
+    if len(keyword) == 1:
+        keyword = list(keyword)   
+
+    
+    
+    keyword_inst = Keywords.objects.filter(keyword__in=keyword)[0]
+    articles = keyword_inst.article.filter(category__in=category)
+    
     title_list = []
     url_list = []
     imageUrl_list = []
@@ -18,6 +30,6 @@ def detail(request, category, keyword):
     
     news_list = {'title' : title_list, 'articleUrl_list' : url_list, 'imageUrl_list' : imageUrl_list}
     
-    return JsonResponse(data=news_list, status=200)
+    return JsonResponse(data=news_list)
     
     

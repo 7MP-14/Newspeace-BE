@@ -5,11 +5,14 @@ from accounts.models import User
     
 class Keywords(models.Model):
     # user = models.ManyToManyField('User')
-    Keyword = models.CharField(max_length=100, null=True, blank=True)
+    article = models.ManyToManyField("Article", blank=True)
+    keyword = models.CharField(max_length=100, null=True, blank=True)
+    
+    def __str__(self):        
+        return self.keyword
     
 class Article(models.Model):
     # user = models.ManyToManyField('User')
-    keyword = models.ManyToManyField('Keywords', blank=True)
     category = models.CharField(max_length=30)
     title = models.TextField()
     content = models.TextField()
@@ -17,5 +20,5 @@ class Article(models.Model):
     articleImgUrl = models.URLField()
     
     def __str__(self):
-        return self.title
+        return self.category
     
