@@ -1,0 +1,45 @@
+{% load static %}
+{% block extrahead %}
+
+{% endblock %}
+
+<link rel="stylesheet" href="{% static 'board/list.css' %}">
+<section class="notice">
+    <div class="page-title">
+        <div class="container">
+            <h3>게시판</h3>
+        </div>
+    </div>
+
+    <!-- board list area -->
+    <div id="board-list">
+        <div class="container">
+            <table class="board-table">
+                <thead>
+                    <tr>
+                        <th scope="col" class="th-num">번호</th>
+                        <th scope="col" class="th-title">제목</th>
+                        <th scope="col" class="th-date">등록일</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 게시글 목록 -->
+                    {% for board in board_all %}
+                        <tr>
+                            <td>{{board.id}}</td>
+                            <th><a href="/board/{{board.id}}"> {{board.title}}</a></th> <!--경로 앞에 /를 붙여주면 절대 경로가 된다. 없으면 현재 페이지 경로 기준으로 상대경로가 됨-->
+                            <td>{{board.created}}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 새 글 작성 버튼 -->
+    <div class="container">
+        <div class="write-button-container">
+            <a href="/board/write/" class="btn btn-dark">새 글 작성</a>
+        </div>
+    </div>
+</section>
