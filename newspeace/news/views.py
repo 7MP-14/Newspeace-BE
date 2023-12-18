@@ -6,7 +6,10 @@ from .models import *
 
 def detail(request, category, keyword):
     category = category.split('+')
-    articles = Article.objects.filter(category__in=category, keyword__in=keyword)
+    keyword = keyword.split('+')
+    
+    keyword_ins = Keywords.objects.filter(keyword=keyword)[0]
+    articles = keyword_ins.article.filter(category__in=category)
     title_list = []
     url_list = []
     imageUrl_list = []
