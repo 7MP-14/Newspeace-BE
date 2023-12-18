@@ -1,6 +1,32 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from .models import *
+from django.contrib.auth.models import Group
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-# Register your models here.
+from .forms import UserChangeForm, UserCreationForm
+from .models import User
+
+class UserAdmin(BaseUserAdmin):
+    form = UserChangeForm
+    add_form = UserCreationForm
+
+    list_display = ('email', 'phone_number','notification_choice','agree_to_terms', 'is_admin')
+    list_filter = ('is_admin',)
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Personal info', {'fields': ('phone_number','notification_choice','agree_to_terms',)}),
+        ('Permissions', {'fields': ('is_admin',)}),
+    )
+
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'phone_number','notification_choice','agree_to_terms', 'password1', 'password2')}
+         ),
+    )
+    search_fields = ('email',)
+    ordering = ('email',)
+    filter_horizontal = ()
+
+
 admin.site.register(User, UserAdmin)
+admin.site.unregister(Group)

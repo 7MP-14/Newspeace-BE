@@ -3,7 +3,14 @@
     <a href="{% url 'signup' %}">회원 가입 </a>
     <a href="{% url 'login' %}?next={{request.path}}">로그인</a>
 {% else %}
-    <a href="#">{{user}}</a>
-    {% comment %} <a href="{% url 'profile' %}">프로필</a>   {% endcomment %}
-    <a href="{% url 'logout' %}?next={{request.path}}">로그 아웃</a>
+    {% if user.is_superuser%}
+        <a href="/admin/"> admin </a>
+    {% endif %}
+        <a href="#">{{user}}</a>
+        {% comment %} <a href="{% url 'profile' %}">프로필</a>   {% endcomment %}
+        <form action="{% url 'logout' %}?next={{request.path}}" method="post">
+            {% csrf_token %}
+            <input type="submit" value="로그아웃" />
+        </form>
+        
 {% endif %}
