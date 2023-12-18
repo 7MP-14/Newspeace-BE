@@ -1,0 +1,14 @@
+{% load static %}
+{% block extrahead %}
+
+{% endblock %}
+
+<h1> 게시글 삭제</h1>
+{{board}} 글을 정말로 삭제하시겠습니까?
+
+<form action="" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="네, 삭제합니다">
+</form>
+
+<a href="{% url 'board:list'%}">아니오, 취소합니다</a>

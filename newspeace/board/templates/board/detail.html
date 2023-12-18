@@ -1,0 +1,11 @@
+{% load static %}
+{% block extrahead %}
+
+{% endblock %}
+
+<h1> {{board.title}} </h1>
+제목 : {{board.title}} <br>
+내용 : {{board.body}} <br>
+
+<p><a href="{% url 'board:list' %}">[목록 보기]</a></p>
+<p><a href="{% url 'board:delete' board.id %}">[글 삭제]</a></p>

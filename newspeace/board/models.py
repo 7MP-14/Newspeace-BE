@@ -9,3 +9,6 @@ class Board(models.Model):   # 테이블 명은 '앱이름_모델명소문자' �
     
     def __str__(self):  # admin이나 shell에서 모델 인스턴스 출력이 어떻게 보일지
         return self.title
+    
+    def get_absolute_url(self):     # redirect(모델인스턴스) 하면 실행되는 메소드
+        return reverse('board:detail', args=[self.id])

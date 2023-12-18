@@ -27,7 +27,7 @@
                     {% for board in board_all %}
                         <tr>
                             <td>{{board.id}}</td>
-                            <th><a href="/board/{{board.id}}"> {{board.title}}</a></th> <!--경로 앞에 /를 붙여주면 절대 경로가 된다. 없으면 현재 페이지 경로 기준으로 상대경로가 됨-->
+                            <th><a href="{% url 'board:detail' board.id %}"> {{board.title}}</a></th> <!--경로 앞에 /를 붙여주면 절대 경로가 된다. 없으면 현재 페이지 경로 기준으로 상대경로가 됨-->
                             <td>{{board.created}}</td>
                         </tr>
                     {% endfor %}
@@ -39,7 +39,7 @@
     <!-- 새 글 작성 버튼 -->
     <div class="container">
         <div class="write-button-container">
-            <a href="/board/write/" class="btn btn-dark">새 글 작성</a>
+            <a href="{% url 'board:write' %}" class="btn btn-dark">새 글 작성</a>
         </div>
     </div>
 </section>
