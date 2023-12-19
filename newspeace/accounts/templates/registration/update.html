@@ -1,0 +1,25 @@
+<h1> 회원정보수정 </h1>
+<form action="{% url 'update' %}" method="post">
+    {% csrf_token %}
+    <table>
+        {{ form.as_table }}
+        <tr>
+            <th>현재 키워드:</th>
+            <td>
+                {% for keyword in user.keywords.all %}
+                    {{ keyword.keyword_text }}
+                    {% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+        </tr>
+        {% comment %} <tr>
+            <th>삭제할 키워드 선택:</th>
+            <td>{{ form.delete_keywords }}</td>
+        </tr> {% endcomment %}
+        {% comment %} <tr>
+            <th>새로운 키워드 추가:</th>
+            <td>{{ form.keyword_input }}</td>
+        </tr> {% endcomment %}
+    </table>
+    <input type="submit" value="수정하기"/>
+</form>

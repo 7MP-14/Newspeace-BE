@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "accounts",
     "board",
+    "rest_framework",
+    "rest_framework.authtoken",
 ]
 
 MIDDLEWARE = [
@@ -135,3 +137,10 @@ LOGOUT_URL = 'logout'
 # 유저모델을 기본적인 auth에서 가져오는 것이 아니라,
 # 내가 만든 앱(accounts)에 있는 User모델을 사용해달라는 의미
 AUTH_USER_MODEL = 'accounts.User'
+
+# 인증방식으로 토큰 사용
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES':[
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}

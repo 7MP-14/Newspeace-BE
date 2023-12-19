@@ -3,33 +3,41 @@ from django.conf import settings
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, phone_number, notification_choice, agree_to_terms, password=None):
+    def create_user(self, email, name, phone_number, emailNotice=None, smsNotice=None, password=None):
         if not email:
             raise ValueError('Users must have an email address')
 
         user = self.model(
             email=self.normalize_email(email),
+            name=name,
             phone_number=phone_number,
-            notification_choice=notification_choice,
-            agree_to_terms=agree_to_terms,
+            emailNotice=emailNotice,
+            smsNotice=smsNotice,
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, phone_number, notification_choice, agree_to_terms, password):
+    def create_superuser(self, email, name, phone_number, emailNotice, smsNotice, password):
         user = self.create_user(
             email,
-            password=password,
+            name=name,
             phone_number=phone_number,
-            notification_choice=notification_choice,
-            agree_to_terms=agree_to_terms,
+            emailNotice=emailNotice,
+            smsNotice=smsNotice,
         )
         user.is_admin = True
         user.save(using=self._db)
         return user
-
+    
+# keyword 테이블 user와 n:m 관계이다.
+class Keyword(models.Model):
+    keyword_text = models.CharField(max_length=255)
+    ratio = models.IntegerField(null=True) # 임시로.. 추후에 긍/부 비율을 나타내야 하는 것에 따라 수정 필요.
+    
+    def __str__(self):
+        return self.keyword_text
 
 class User(AbstractBaseUser):
     email = models.EmailField(
@@ -37,21 +45,19 @@ class User(AbstractBaseUser):
         max_length=255,
         unique=True,
     )
+    name=models.CharField(max_length=20)
     phone_number=models.CharField(max_length=20)
-    notification_choice = models.CharField(
-        max_length=10,
-        choices=[('email', 'Email'), ('sms', 'SMS')],
-        default='email',
-    )
-    agree_to_terms = models.BooleanField()
-
+    emailNotice = models.BooleanField(null=True, blank=True)
+    smsNotice = models.BooleanField(null=True, blank=True)
+    keywords = models.ManyToManyField(Keyword, blank=True)
+    
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['phone_number','notification_choice','agree_to_terms']
+    REQUIRED_FIELDS = ['name','phone_number','emailNotice','smsNotice']
 
     def __str__(self):
         return self.email
@@ -65,18 +71,7 @@ class User(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_admin
-# class User(AbstractUser):
-#     pass
 
-# # auth의 user 모델과 1:1 관계 user의 프로필 테이블
-# class Profile(models.Model):
-#     user=models.OneToOneField(User, on_delete=models.CASCADE)
-#     email=models.CharField(max_length=50)
-#     phone_number=models.CharField(max_length=20)
-#     notification_choice = models.CharField(
-#         max_length=10,
-#         choices=[('email', 'Email'), ('sms', 'SMS')],
-#         default='email',
-#     )
-#     agree_to_terms = models.BooleanField()
+
+
 
