@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "accounts",
     "board",
     "news",
+    "api",
     "rest_framework",
     "rest_framework.authtoken",
 ]
