@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-g+rjzx(!!%q=1-58k#cf+$&79njc(@fy^ts*_mf=xjph0p7g9-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['newspeace.co.kr']
+ALLOWED_HOSTS = ['newspeace.co.kr', 'localhost', '127.0.0.1']
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # 프론트엔드 주소
@@ -129,7 +129,15 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+import os
 STATIC_URL = "static/"
+# STATICFILES_DIRS = [                            # 장고 개발 웹 서버에서만 사용하는 위치
+#     os.path.join(BASE_DIR, 'newspeace', 'static'), 
+# ]
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # 실제 서비스 할 때 사용하는 위치
+
+MEDIA_URL = '/media/'                           # 가상 경로
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')    # media 파일 위치   # '\newspeace\media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
