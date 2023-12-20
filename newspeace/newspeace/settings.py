@@ -25,7 +25,12 @@ SECRET_KEY = "django-insecure-g+rjzx(!!%q=1-58k#cf+$&79njc(@fy^ts*_mf=xjph0p7g9-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['newspeace.co.kr']
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # 프론트엔드 주소
+    # 다른 필요한 도메인 주소 추가
+]
 
 
 # Application definition
@@ -41,8 +46,10 @@ INSTALLED_APPS = [
     "board",
     "news",
     "api",
+    "notice",
     "rest_framework",
     "rest_framework.authtoken",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -53,6 +60,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "newspeace.urls"

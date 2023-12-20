@@ -5,3 +5,4 @@ Django
 tensorflow-cpu
 openai
 djangorestframework
+django-cors-headers

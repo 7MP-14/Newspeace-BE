@@ -28,4 +28,5 @@ urlpatterns = [
     path("board/", include('board.urls')),
     path("news/", include('news.urls')),
     path("api/", include('api.urls')),
+    path("notice/", include('notice.urls')),
 ]
