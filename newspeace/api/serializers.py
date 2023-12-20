@@ -12,6 +12,9 @@ class KeywordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Keyword
         fields = ('id', 'keyword_text', 'ratio')
+    extra_kwargs = {
+        'keyword_text': {'write_only': True},
+    }
 
 class UserSerializer(serializers.ModelSerializer):
     keywords = KeywordSerializer(many=True, read_only=True)
@@ -28,16 +31,22 @@ class UserSerializer(serializers.ModelSerializer):
         write_only=True,
         required=True,
     )
-    # token = serializers.CharField(read_only=True)  # 추가: 토큰을 응답에 추가
 
     class Meta:
         model = User
         fields = ('id', 'email', 'name', 'phone_number', 'emailNotice', 'smsNotice', 'keywords', 'password', 'password2')
 
+    
     def validate(self, data): # password과 password2의 일치 여부 확인
-        if data['password'] != data['password2']:
-            raise serializers.ValidationError(
-                {"password": "Password fields didn't match."})
+        # password와 password2의 일치 여부 확인은 create 시에만 수행
+        if self.context['request'].method == 'POST':
+            password = data.get('password')
+            password2 = data.get('password2')
+            if password != password2:
+                raise serializers.ValidationError({"password": "Password fields didn't match."})
+        # if data['password'] != data['password2']:
+        #     raise serializers.ValidationError(
+        #         {"password": "Password fields didn't match."})
         
         return data
 
@@ -56,6 +65,36 @@ class UserSerializer(serializers.ModelSerializer):
 
         return user
     
+    def update(self, instance, validated_data):
+        # 프로필 업데이트 시, 키워드를 추가할 수 있도록 로직 추가
+        keywords_data = validated_data.pop('keywords', [])
+        instance = super().update(instance, validated_data)
+
+        # 기존 키워드 모두 삭제
+        instance.keywords.clear()
+        
+        for keyword_data in keywords_data:
+            keyword_text = keyword_data.get('keyword_text')
+            if keyword_text:
+                try:
+                    keyword, created = Keyword.objects.get_or_create(keyword_text=keyword_text)
+                    # 새로운 키워드를 추가
+                    instance.keywords.add(keyword)
+                except Keyword.DoesNotExist:
+                    # Keyword 객체를 찾을 수 없을 때의 처리
+                    pass
+                except Exception as e:
+                    # 다른 예외 처리
+                    print(e)
+
+        # 비밀번호 변경 처리
+        password = validated_data.get('password')
+        if password:
+            instance.set_password(password)
+            instance.save()
+
+        return instance
+    
 #로그인
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
@@ -65,8 +104,11 @@ class LoginSerializer(serializers.Serializer):
     def validate(self, data):
         user = authenticate(**data)
         if user:
-            token = Token.objects.get(user=user) # 해당 유저의 토큰을 불러옴
-            return token
+            token, created = Token.objects.get_or_create(user=user)
+            return {
+                'token': token.key,
+                'user_id': user.id  # 사용자 ID를 추가
+            }
         raise serializers.ValidationError( # 가입된 유저가 없을 경우
             {"error": "Unable to log in with provided credentials."}
         )
