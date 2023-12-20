@@ -30,3 +30,9 @@ urlpatterns = [
     path("api/", include('api.urls')),
     path("notice/", include('notice.urls')),
 ]
+
+# media 인식할 수 있도록
+from django.conf import settings
+from django.conf.urls.static import static
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
