@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "board",
     "news",
     "api",
+    "notice",
     "rest_framework",
     "rest_framework.authtoken",
     "corsheaders",
