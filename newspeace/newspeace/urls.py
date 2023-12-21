@@ -28,7 +28,7 @@ urlpatterns = [
     path("board/", include('board.urls')),
     path("news/", include('news.urls')),
     path("api/", include('api.urls')),
-    # path("notice/", include('notice.urls')),
+    path("notice/", include('notice.urls')),
 ]
 
 # media 인식할 수 있도록
