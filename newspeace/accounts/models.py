@@ -53,6 +53,7 @@ class User(AbstractBaseUser):
     
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
+    is_email_verified = models.BooleanField(default=False)   # 이메일 인증 완료 여부
 
     objects = UserManager()
 
