@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from .models import *
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 import csv
 import pandas as pd
 from preprocess import process_news_keyword
@@ -57,7 +57,7 @@ def hot_keyword(request):
             
     return JsonResponse({'hot_keyword' : hot_keyword})
 
-# 기사 스크립트
+# 기사 스크립트 누르면 db에 저장
 def newsScript(request):
     if request.method == "POST":
         user_id = request.POST.get('userId')
@@ -80,6 +80,27 @@ def newsScript(request):
         # mynews_instance.img = article.img
         # mynews_instance.save()
         
+
+# 기사 스크립트 확인하기
+def MyNewsScript(request):
+    if request.method == 'GET':
+        # user_id = request.GET.get('userId')
+        user_id = 1
+        
+        user = User.objects.get(id=user_id)
+        mynews = user.mynews_set.all()
+        
+        result = []
+        for news in mynews:
+            news_dict = {
+                'title': news.title,
+                'link': news.link,
+                'img': news.img
+            }
+            result.append(news_dict)
+        
+        return JsonResponse({'myNews_script' : result})
+
 
 # sample 데이터 db에 삽입
 # def import_csv_to_db(request):
