@@ -47,8 +47,8 @@ class User(AbstractBaseUser):
     )
     name=models.CharField(max_length=20)
     phone_number=models.CharField(max_length=20)
-    emailNotice = models.BooleanField(null=True, blank=True)
-    smsNotice = models.BooleanField(null=True, blank=True)
+    emailNotice = models.BooleanField(null=True, blank=True, default=False)
+    smsNotice = models.BooleanField(null=True, blank=True, default=False)
     keywords = models.ManyToManyField(Keyword, blank=True)
     
     is_active = models.BooleanField(default=True)
