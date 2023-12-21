@@ -57,6 +57,10 @@ def hot_keyword(request):
     return JsonResponse({'hot_keyword' : hot_keyword})
 
 
+def mynews(request):
+    if request.method == "POST":
+        request
+
 # sample 데이터 db에 삽입
 # def import_csv_to_db(request):
 #     csv_file_path = 'data.csv'
