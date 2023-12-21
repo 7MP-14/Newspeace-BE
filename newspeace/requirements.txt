@@ -1,8 +1,12 @@
 mlflow
-opencv-python
+# opencv-python
 Pillow
 Django
-tensorflow-cpu
-openai
+# tensorflow-cpu
+# openai
 djangorestframework
 django-cors-headers
+torch
+python-mecab-ko
+transformers
+konlpy
