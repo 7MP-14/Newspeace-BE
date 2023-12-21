@@ -12,8 +12,8 @@ from sqlalchemy.sql import text
 def crawling(category, start_time):
     items = []
     i = 1
-    # while i >= 1:
-    while 3 > i:  # test용 반복 (반복 횟수를 줄였음)
+    while i >= 1:
+    # while 3 > i:  # test용 반복 (반복 횟수를 줄였음)
         url = f'https://news.daum.net/breakingnews/{category}?page={i+1}'   # i번째 페이지
 
         response = requests.get(url)  
@@ -76,7 +76,7 @@ one_hour_ago =  datetime.now() - timedelta(hours=1)
 one_hour_ago = one_hour_ago.strftime("%H:%M")
 
 result_df = pd.DataFrame()
-for category in category_list[:1]:
+for category in category_list:
     result_df = pd.concat([result_df, crawling(category, one_hour_ago)])
 
 
@@ -84,19 +84,24 @@ for category in category_list[:1]:
 result_df_1 = result_df.reset_index(drop=True)
 result_df_2 = result_df_1[['category', 'title', 'detail', 'link', 'img', 'create_dt']]
 
+# category 필드 한글 변경
+category_map = {'society' : '사회', 'politics' : '정치', 'economic' : '경제', 'foreign' : '외국',
+                'culture' : '문화', 'entertain' : '여가', 'sports' : '스포츠', 'digital' : '전자'}
+result_df_2.category = result_df_2.category.map(category_map)
 
-
+# MYSQL 연결
 con = create_engine("mysql+pymysql://admin:admin12345@joon-sql-db-1.cvtb5zj20jzi.ap-northeast-2.rds.amazonaws.com:3306/joon_db")
 
+# db에 데이터 저장
 result_df_2.to_sql('news_article', con, if_exists='append', index=False)
 
 
+# db에 데이터 삭제
 
-# 현재 시간으로부터 6분 전의 시간 계산
+# 현재 시간으로부터 12시간 전의 시간 계산
 current_datetime = datetime.now()
-time_to_delete = current_datetime - timedelta(minutes=6)
+time_to_delete = current_datetime - timedelta(hours=12)
 print(current_datetime)
-print(time_to_delete)
 
 
 # connection = con.connect()
