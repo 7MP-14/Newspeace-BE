@@ -1,0 +1,6 @@
+<form method="post" action="{% url 'news-script' %}">
+    {% csrf_token %}
+    <input type="text" name="userId">
+    <input type="text" name="newsId">
+    <input type="submit" value="Add News">
+</form>

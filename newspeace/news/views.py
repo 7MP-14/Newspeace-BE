@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from .models import *
 from django.http import JsonResponse
 import csv
@@ -56,6 +57,29 @@ def hot_keyword(request):
             
     return JsonResponse({'hot_keyword' : hot_keyword})
 
+# 기사 스크립트
+def newsScript(request):
+    if request.method == "POST":
+        user_id = request.POST.get('userId')
+        news_id = request.POST.get('newsId')
+        
+        article = Article.objects.get(id=news_id)
+        user = User.objects.get(id=user_id)
+        mynews = MyNews.objects.create(title=article.title, link = article.link, img = article.img)
+        mynews.user.add(user)
+        
+        return JsonResponse({"return" : "성공"})
+    
+    else:
+        return render(request, 'news/come.html')
+    
+        # mynews_instance = MyNews()
+        # mynews_instance.user = user_id
+        # mynews_instance.title = article.title
+        # mynews_instance.link = article.link
+        # mynews_instance.img = article.img
+        # mynews_instance.save()
+        
 
 # sample 데이터 db에 삽입
 # def import_csv_to_db(request):

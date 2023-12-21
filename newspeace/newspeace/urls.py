@@ -24,7 +24,7 @@ def index(request):
 
 urlpatterns = [
     path('',index),
-    path("main/", hot_keyword, name="top-keyword"),
+    path('hot/', hot_keyword, name="hot_keyword"),
     path("admin/", admin.site.urls),
     path("accounts/", include('accounts.urls')),
     path("board/", include('board.urls')),
