@@ -17,12 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import render
+from news.views import topkeyword
 
 def index(request):
     return render(request,'main.html')
 
 urlpatterns = [
     path('',index),
+    path('main/', topkeyword, name="top-keyword"),
     path("admin/", admin.site.urls),
     path("accounts/", include('accounts.urls')),
     path("board/", include('board.urls')),
