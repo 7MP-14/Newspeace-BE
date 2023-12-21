@@ -30,7 +30,7 @@ class LoginView(generics.GenericAPIView):
 #프로필 불러오기, 수정
 class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
-    permission_classes = [CustomReadOnly]
+    permission_classes = [AllowAny]
     queryset = User.objects.all()
     
     # def get_object(self):
