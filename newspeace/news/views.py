@@ -46,15 +46,15 @@ def search(request):
 
 
 # 인기 검색어 조회
-def topkeyword(request):
+def hot_keyword(request):
     if request.method == "GET":
         keywords = KeywordCount.objects.order_by('-count')[:10]
-        keywords_list = []
+        hot_keyword = []
         
         for i in keywords:
-            keywords_list.append(i.name)
+            hot_keyword.append(i.name)
             
-    return JsonResponse({'keyword_list' : keywords_list})
+    return JsonResponse({'hot_keyword' : hot_keyword})
 
 
 # sample 데이터 db에 삽입
