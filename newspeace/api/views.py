@@ -96,6 +96,12 @@ def verify_email(request):
 
             # 이메일과 인증 코드를 비교
             if user_id == stored_user_id and verification_code == stored_verification_code:
+                
+                # User의 is_email_verified를 True로 변경
+                user = get_object_or_404(User, id=user_id)
+                user.is_email_verified = True
+                user.save()
+                
                 # 세션에서 데이터 삭제 (선택적)
                 del request.session['user_id']
                 del request.session['verification_code']
