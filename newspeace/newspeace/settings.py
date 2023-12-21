@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-g+rjzx(!!%q=1-58k#cf+$&79njc(@fy^ts*_mf=xjph0p7g9-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['newspeace.co.kr', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['www.newspeace.co.kr', 'm.newspeace.co.kr', 'newspeace.co.kr', 'localhost', '127.0.0.1']
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # 프론트엔드 주소
