@@ -12,7 +12,7 @@
 
         <!-- 새 글 작성 폼 -->
         <div class="write-form-container">
-            <form action="" method="post">
+            <form action="" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {% comment %} <div class="form-field">
                     <label for="title">제목</label>
@@ -21,11 +21,17 @@
                 <div class="form-field">
                     <label for="content">내용</label>
                     <textarea id="content" name="content" placeholder="내용을 입력하세요" rows="10" required></textarea>
+                </div>
+                <div class="form-field">
+                    <label for="content">사진</label>
+                    <input type="file" name="image" accept="image/*">
                 </div> {% endcomment %}
+                
 
                 <table>
                     {{form.as_table}}
                 </table>
+                
                 <button type="submit" class="btn btn-dark">게시</button>
             </form>
         </div>

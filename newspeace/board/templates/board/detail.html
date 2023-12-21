@@ -6,6 +6,10 @@
 <h1> {{board.title}} </h1>
 제목 : {{board.title}} <br>
 내용 : {{board.body}} <br>
+{% if board.image %}
+    <img src="{{board.image.url}}">
+    <br><br>
+{% endif %}
 
 <p><a href="{% url 'board:list' %}">[목록 보기]</a></p>
 {% if user.is_admin %}

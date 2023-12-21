@@ -38,6 +38,10 @@ def write(request):
             # board = form.save()                                # DB에 저장하는 방법2 
             board = form.save(commit=False)                      # commit=False: commit 지연. DB에 save는 안하고 모델인스턴스에 넣어서 리턴만 해줌
             board.author_id = request.user.id                    # 현재 로그인 되어있는 User id 가져오기
+            try:
+                board.image = request.FILES['image']
+            except:
+                board.image = None
             board.save()                                         # 추가 작업
             # return HttpResponse('추가 작업 완료!')
             return redirect(board)                       # 요청 끝나고 '/board/id/' detail 페이지 실행
