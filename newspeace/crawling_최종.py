@@ -98,9 +98,9 @@ result_df_2.to_sql('news_article', con, if_exists='append', index=False)
 
 # db에 데이터 삭제
 
-# 현재 시간으로부터 12시간 전의 시간 계산
+# 현재 시간으로부터 12시간-> 2일 전의 시간 계산
 current_datetime = datetime.now()
-time_to_delete = current_datetime - timedelta(hours=12)
+time_to_delete = current_datetime - timedelta(days=2)
 print(current_datetime)
 
 
@@ -110,6 +110,9 @@ with con.connect() as connection:
     result = connection.execute(query, {"time_to_delete" : time_to_delete})
     connection.commit()
     
+# 실험 결과, 서버와 crontab active 와는 연관이 따로 없어보임. -> 따로 켜주고 끄고 해야될듯.
+# mysql db에 잘 들어가는거 서버에서 확인함.
+
 
 # conn = pymysql.connect(
 #    host='joon-sql-db-1.cvtb5zj20jzi.ap-northeast-2.rds.amazonaws.com',
