@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 import pymysql
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
+import db_info
+db = db_info.DATABASES['default']
 
 # 기사를 크롤링하는 함수
 def crawling(category, start_time):
@@ -90,7 +92,8 @@ category_map = {'society' : '사회', 'politics' : '정치', 'economic' : '경�
 result_df_2.category = result_df_2.category.map(category_map)
 
 # MYSQL 연결
-con = create_engine("mysql+pymysql://admin:admin12345@joon-sql-db-1.cvtb5zj20jzi.ap-northeast-2.rds.amazonaws.com:3306/joon_db")
+password = db['PASSWORD']
+con = create_engine(f"mysql+pymysql://admin:{password}@joon-sql-db-1.cvtb5zj20jzi.ap-northeast-2.rds.amazonaws.com:3306/joon_db")
 
 # db에 데이터 저장
 result_df_2.to_sql('news_article', con, if_exists='append', index=False)
