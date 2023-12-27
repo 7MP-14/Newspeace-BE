@@ -124,16 +124,3 @@ def verify_email(request):
             pass  # JSON 디코딩 오류 처리
     
     return JsonResponse({'verify_email': False, 'message': '이메일 인증에 실패했습니다.'}, status=400)
-
-
-# 구독 키워드 설정 부정률 이상 도달 시 이메일 알림 보내기
-# keyword 테이블의 ratio 참조 
-from django.core.mail import EmailMessage
-
-def send_email(request):
-    
-    subject = "message"							# 타이틀
-    to = ["uuas5866@naver.com"]					# 수신할 이메일 주소
-    from_email = "newspeace99@outlook.com"			# 발신할 이메일 주소
-    message = "메세지 테스트"					# 본문 내용
-    EmailMessage(subject=subject, body=message, to=to, from_email=from_email).send()
