@@ -7,8 +7,6 @@ from datetime import datetime, timedelta
 import pymysql
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
-import db_info
-db = db_info.DATABASES['default']
 
 # 기사를 크롤링하는 함수
 def crawling(category, start_time):
@@ -72,6 +70,8 @@ def detail(url):
     return detail, img
 
 
+start_current_datetime = datetime.now()
+print(f"시작 : {start_current_datetime}")
 
 category_list = ['society', 'politics', 'economic', 'foreign', 'culture', 'entertain', 'sports', 'digital']
 one_hour_ago =  datetime.now() - timedelta(hours=1)
@@ -84,45 +84,48 @@ for category in category_list:
 
 
 result_df_1 = result_df.reset_index(drop=True)
-result_df_2 = result_df_1[['category', 'title', 'detail', 'link', 'img', 'create_dt']]
+result_df_2 = result_df_1[['title', 'detail','category', 'link', 'img', 'create_dt']]
 
 # category 필드 한글 변경
-category_map = {'society' : '사회', 'politics' : '정치', 'economic' : '경제', 'foreign' : '외국',
-                'culture' : '문화', 'entertain' : '여가', 'sports' : '스포츠', 'digital' : '전자'}
+category_map = {'society' : '사회', 'politics' : '정치', 'economic' : '경제', 'foreign' : '국제',
+                'culture' : '문화', 'entertain' : '연예', 'sports' : '스포츠', 'digital' : 'IT'}
 result_df_2.category = result_df_2.category.map(category_map)
 
-# MYSQL 연결
-password = db['PASSWORD']
-con = create_engine(f"mysql+pymysql://admin:{password}@joon-sql-db-1.cvtb5zj20jzi.ap-northeast-2.rds.amazonaws.com:3306/joon_db")
+# db 연결
+con = create_engine("mysql+pymysql://admin:admin12345@joon-sql-db-1.cvtb5zj20jzi.ap-northeast-2.rds.amazonaws.com:3306/joon_db")
 
-# db에 데이터 저장
+# db 저장
 result_df_2.to_sql('news_article', con, if_exists='append', index=False)
 
+end_current_datetime = datetime.now()
+print(f"끝 : {end_current_datetime}")
+
+# 현재 시간으로부터 2일 전의 시간 계산
+current_datetime = datetime.now()
+time_to_delete = current_datetime - timedelta(days=2) + timedelta(hours=1)
 
 # db에 데이터 삭제
-
-# 현재 시간으로부터 12시간-> 2일 전의 시간 계산
-current_datetime = datetime.now()
-time_to_delete = current_datetime - timedelta(days=2)
-print(current_datetime)
-
-
-# connection = con.connect()
 with con.connect() as connection:
     query = text("DELETE FROM news_article WHERE CREATE_DT < :time_to_delete")
     result = connection.execute(query, {"time_to_delete" : time_to_delete})
     connection.commit()
     
-# 실험 결과, 서버와 crontab active 와는 연관이 따로 없어보임. -> 따로 켜주고 끄고 해야될듯.
-# mysql db에 잘 들어가는거 서버에서 확인함.
+# # db에서 데이터 불러오기
+# sql_query = "SELECT * FROM accounts_keyword"
+# df = pd.read_sql_query(sql_query, con)
 
+# word_list = list(df.keyword_text)
+# time_hour = datetime.now().hour
 
-# conn = pymysql.connect(
-#    host='joon-sql-db-1.cvtb5zj20jzi.ap-northeast-2.rds.amazonaws.com',
-#    user='admin',
-#    password='admin12345', 
-#    database= 'joon_db', 
-#    charset='utf8')
+# with con.connect() as connection:
+#     query = text("SELECT detail FROM news_article WHERE HOUR(CREATE_DT) = :time_hour")
+#     result = connection.execute(query, {"time_hour" : time_hour})
+
+# fields = ['id', 'title','detail']
+# article_list = list(result.values(*fields))
+# df = pd.DataFrame(article_list)
+# df = df.iloc[:10, :]
+    
 
     
 # # 데이터프레임을 json 파일로 저장하기
