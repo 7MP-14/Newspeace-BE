@@ -61,6 +61,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         instance.save()   
 
 
+
 # 이메일 인증 코드를 세션에 저장
 @csrf_exempt
 def send_verification_email(request):
@@ -69,11 +70,18 @@ def send_verification_email(request):
             payload = json.loads(request.body.decode('utf-8'))
             user_id = payload.get('user_id')
             verification_code = payload.get('verification_code')
-
+            
             # 세션에 데이터 저장
             request.session['user_id'] = user_id
             request.session['verification_code'] = verification_code
-            return JsonResponse({'status': 'success', 'message': '이메일이 성공적으로 전송되었습니다. 이메일을 확인하세요.'})
+            request.session.save()
+            session_key=request.session.session_key
+            
+            # 세션에 저장된 전체 데이터 출력
+            print("user_id:", request.session.get('user_id'))
+            print("verification_code:", request.session.get('verification_code'))
+
+            return JsonResponse({'status': 'success', 'message': '이메일이 성공적으로 전송되었습니다. 이메일을 확인하세요.', 'key' : session_key})
 
         except json.JSONDecodeError:
             pass  # JSON 디코딩 오류 처리
@@ -89,25 +97,43 @@ def verify_email(request):
             payload = json.loads(request.body.decode('utf-8'))
             user_id = payload.get('user_id')
             verification_code = payload.get('verification_code')
-
+            session_key=payload.get('key')
+            
+            stored_user_id = Session.objects.get(session_key=session_key).get_decoded().get('user_id')
+            stored_verification_code = Session.objects.get(session_key=session_key).get_decoded().get('verification_code')
+            
             # 세션에서 데이터 조회
-            stored_user_id = request.session.get('user_id')
-            stored_verification_code = request.session.get('verification_code')
-
+            
+            print("Stored User ID:", stored_user_id)
+            print("Stored Verification Code:", stored_verification_code)
+            
             # 이메일과 인증 코드를 비교
             if user_id == stored_user_id and verification_code == stored_verification_code:
-                
+            
                 # User의 is_email_verified를 True로 변경
                 user = get_object_or_404(User, id=user_id)
                 user.is_email_verified = True
                 user.save()
-                
+                          
                 # 세션에서 데이터 삭제 (선택적)
-                del request.session['user_id']
-                del request.session['verification_code']
+                # del request.session['user_id']
+                # del request.session['verification_code']
                 return JsonResponse({'verify_email': True, 'message': '이메일 인증이 성공적으로 완료되었습니다.'})
 
         except json.JSONDecodeError:
             pass  # JSON 디코딩 오류 처리
-
+    
     return JsonResponse({'verify_email': False, 'message': '이메일 인증에 실패했습니다.'}, status=400)
+
+
+# 구독 키워드 설정 부정률 이상 도달 시 이메일 알림 보내기
+# keyword 테이블의 ratio 참조 
+from django.core.mail import EmailMessage
+
+def send_email(request):
+    
+    subject = "message"							# 타이틀
+    to = ["uuas5866@naver.com"]					# 수신할 이메일 주소
+    from_email = "newspeace99@outlook.com"			# 발신할 이메일 주소
+    message = "메세지 테스트"					# 본문 내용
+    EmailMessage(subject=subject, body=message, to=to, from_email=from_email).send()

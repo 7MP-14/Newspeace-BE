@@ -10,3 +10,4 @@ torch
 python-mecab-ko
 transformers
 konlpy
+django-apscheduler
