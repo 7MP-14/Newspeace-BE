@@ -7,6 +7,5 @@ urlpatterns = [
     path('profile/<int:pk>/', ProfileView.as_view(), name='user-profile'),
     path('verify-email/', verify_email, name='verify-email'),
     path('send-verify-email/', send_verification_email,name='send-verification-email'),
-    path('send-email/', send_email, name='send-email'),
 ]
 
