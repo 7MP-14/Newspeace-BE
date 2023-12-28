@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import render
-from news.views import hot_keyword
+from news.views import hot_keyword, myKeyword
 
 def index(request):
     return render(request,'main.html')
@@ -25,6 +25,7 @@ def index(request):
 urlpatterns = [
     path('',index),
     path('hot/', hot_keyword, name="hot_keyword"),
+    path('mykeyword/', myKeyword),
     path("admin/", admin.site.urls),
     path("accounts/", include('accounts.urls')),
     path("board/", include('board.urls')),
