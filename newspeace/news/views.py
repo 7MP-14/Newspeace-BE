@@ -9,6 +9,7 @@ from preprocess_version2 import process_news_paragraph_kakao
 from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime, timedelta
+from api import utils
 # # Create your views here.
         
 @csrf_exempt
@@ -165,9 +166,15 @@ def realTimeRatio(request, day, hour):
             
             # NegativeKeywordInfo 객체 생성
             if negative >= 0:
-                NegativeKeywordInfo.objects.create(keyword=target_keyword, 
-                                                   create_dt=timezone.now(), 
-                                                   negative=negative)
+                stock_code = target_keyword.code
+                price = utils.get_price(stock_code)
+
+                NegativeKeywordInfo.objects.create(keyword = target_keyword, 
+                                                   create_dt = timezone.now(), 
+                                                   negative = negative, 
+                                                   present = price,
+                                                   )
+            
             
 
         # keyword_set = Keyword.objects.all()
@@ -201,11 +208,14 @@ def myKeyword(request):
         
         result_time = []
         result_negative = []
+        result_present = []
+        
         for negative_info in negative_info_list:
             result_time.append(negative_info.create_dt)
             result_negative.append(negative_info.negative)
+            result_present.append(negative_info.present)
             
-        return JsonResponse({'result_time' : result_time, 'result_negative' : result_negative})
+        return JsonResponse({'result_time' : result_time, 'result_negative' : result_negative, 'result_present':result_present})
 
 
 # sample 데이터 db에 삽입
