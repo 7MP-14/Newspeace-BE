@@ -34,7 +34,8 @@ class LoginView(generics.GenericAPIView):
 
         return Response({
             "token": validated_data.get('token'),  # 수정: 'token' 키에 대한 값을 가져오도록 수정
-            "user_id": validated_data.get('user_id')  # 수정: 'user_id' 키에 대한 값을 가져오도록 수정
+            "user_id": validated_data.get('user_id'),  # 수정: 'user_id' 키에 대한 값을 가져오도록 수정
+            "is_admin": validated_data.get('is_admin')
         }, status=status.HTTP_200_OK)
 
 #프로필 불러오기, 수정

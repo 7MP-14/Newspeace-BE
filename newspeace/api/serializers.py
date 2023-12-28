@@ -107,7 +107,8 @@ class LoginSerializer(serializers.Serializer):
             token, created = Token.objects.get_or_create(user=user)
             return {
                 'token': token.key,
-                'user_id': user.id  # 사용자 ID를 추가
+                'user_id': user.id,  # 사용자 ID를 추가
+                'is_admin': user.is_admin
             }
         raise serializers.ValidationError( # 가입된 유저가 없을 경우
             {"error": "Unable to log in with provided credentials."}
