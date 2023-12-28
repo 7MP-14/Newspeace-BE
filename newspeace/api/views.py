@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated,AllowAny
+
 from .permissions import CustomReadOnly
 
 from django.core.mail import send_mail
@@ -13,6 +14,8 @@ import json
 from django.contrib.sessions.models import Session
 
 from .serializers import *
+
+from .utils import get_code_from_df_krx
 
 User = get_user_model()
 #회원가입
@@ -55,7 +58,8 @@ class ProfileView(generics.RetrieveUpdateAPIView):
             keyword_text = keyword_data.get('keyword_text')
             keyword_id = keyword_data.get('id')  # 추가: 키워드의 ID 가져오기
             if keyword_text:
-                keyword, created = Keyword.objects.get_or_create(keyword_text=keyword_text)
+                code=get_code_from_df_krx(keyword_text)
+                keyword, created = Keyword.objects.get_or_create(keyword_text=keyword_text, defaults={'code':code})
                 if created or not instance.keywords.filter(keyword_text__iexact=keyword_text).exists():
                     instance.keywords.add(keyword)
         instance.save()   
@@ -126,11 +130,19 @@ def verify_email(request):
     return JsonResponse({'verify_email': False, 'message': '이메일 인증에 실패했습니다.'}, status=400)
 
 
-# 구독 키워드 설정 부정률 이상 도달 시 이메일 알림 보내기
-# keyword 테이블의 ratio 참조 
+from accounts.models import Keyword
+
+
+
+
+# # 구독 키워드 설정 부정률 이상 도달 시 이메일 알림 보내기
+# # 프론트에서 user_id 가져와서 user가 갖고 있는 keyword들의 ratio 참조 
+
 from django.core.mail import EmailMessage
 
 def send_email(request):
+    
+    keyword_ratio=Keyword.objects.values_list()
     
     subject = "message"							# 타이틀
     to = ["uuas5866@naver.com"]					# 수신할 이메일 주소

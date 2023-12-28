@@ -11,7 +11,7 @@ User = get_user_model()
 class KeywordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Keyword
-        fields = ('id', 'keyword_text', 'ratio')
+        fields = ('id', 'keyword_text', 'ratio','code')
     extra_kwargs = {
         'keyword_text': {'write_only': True},
     }

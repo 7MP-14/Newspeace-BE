@@ -35,6 +35,7 @@ class UserManager(BaseUserManager):
 class Keyword(models.Model):
     keyword_text = models.CharField(max_length=255)
     ratio = models.IntegerField(null=True) # 임시로.. 추후에 긍/부 비율을 나타내야 하는 것에 따라 수정 필요.
+    code = models.CharField(max_length=10, null=True)
     
     def __str__(self):
         return self.keyword_text
