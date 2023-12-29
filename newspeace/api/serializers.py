@@ -68,10 +68,10 @@ class UserSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         # 프로필 업데이트 시, 키워드를 추가할 수 있도록 로직 추가
         keywords_data = validated_data.pop('keywords', [])
-        instance = super().update(instance, validated_data)
+        # instance = super().update(instance, validated_data)
 
         # 기존 키워드 모두 삭제
-        instance.keywords.clear()
+        # instance.keywords.clear()
         
         for keyword_data in keywords_data:
             keyword_text = keyword_data.get('keyword_text')
@@ -91,10 +91,14 @@ class UserSerializer(serializers.ModelSerializer):
         password = validated_data.get('password')
         if password:
             instance.set_password(password)
-            instance.save()
+        instance.save()
 
         return instance
     
+# 유저의 특정 키워드 삭제
+class KeywordDeleteSerializer(serializers.Serializer):
+    keyword_ids = serializers.ListField(child=serializers.IntegerField(), required=True)
+
 #로그인
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)

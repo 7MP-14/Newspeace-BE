@@ -63,8 +63,27 @@ class ProfileView(generics.RetrieveUpdateAPIView):
                 keyword, created = Keyword.objects.get_or_create(keyword_text=keyword_text, defaults={'code':code})
                 if created or not instance.keywords.filter(keyword_text__iexact=keyword_text).exists():
                     instance.keywords.add(keyword)
-        instance.save()   
+        
+# 프로필 유저 키워드 삭제
+class KeywordDeleteView(generics.UpdateAPIView):
+    serializer_class = KeywordDeleteSerializer
+    permission_classes = [AllowAny]  # 필요한 권한을 여기에 추가
 
+    def get_object(self):
+        user_id = self.kwargs.get('user_id')
+        return get_object_or_404(User, pk=user_id)
+    
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # 키워드 삭제 로직 추가
+        keyword_ids = serializer.validated_data.get('keyword_ids',[])
+        if keyword_ids:
+            instance.keywords.remove(*instance.keywords.filter(id__in=keyword_ids))
+
+        return Response({"message": "키워드 삭제 완료!"}, status=status.HTTP_200_OK)
 
 
 # 이메일 인증 코드를 세션에 저장
