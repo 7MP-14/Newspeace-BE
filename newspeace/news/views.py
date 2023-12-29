@@ -1,15 +1,19 @@
 from django.shortcuts import render
-from .models import *
-from accounts.models import *
 from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from accounts.models import *
+from .models import *
+
 import csv
 import pandas as pd
-from preprocess import process_news_keyword
-from preprocess_version2 import process_news_paragraph_kakao
-from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime, timedelta
+
+from preprocess import process_news_keyword
+from preprocess_version2 import process_news_paragraph_kakao
 from api import utils
+
+
 # # Create your views here.
         
 @csrf_exempt
@@ -41,12 +45,14 @@ def search(request):
         key_cate_articles = Article.objects.filter(detail__icontains=search_keyword)
 
     if key_cate_articles:  # 키워드에 해당하는 기사가 있을 경우
-        fields = ['id', 'title','detail', 'link', 'img']
+        fields = ['id', 'title','detail', 'link', 'img', 'write_dt', 'sentiment']
         article_list = list(key_cate_articles.values(*fields))
-        df = pd.DataFrame(article_list)
-        df = df.iloc[:5, :]
+        result_df = pd.DataFrame(article_list)
 
-        result_df, postive = process_news_keyword(df, search_keyword)
+        positive_len = len(result_df[result_df['sentiment'] == 1])
+        negative_len = len(result_df[result_df['sentiment'] == -1])
+        negative_percentage = (negative_len/(positive_len+negative_len)) * 100
+        negative = round(negative_percentage, 1)
         
         json_data = {
         "긍정": result_df[result_df['sentiment'] == 1].to_dict(orient='records'),  
@@ -55,10 +61,10 @@ def search(request):
         
         end_time = datetime.now()
         running_time =  end_time - start_time
-        return JsonResponse({'article': json_data, '긍정도':postive, '부정도' : (100-postive), 'keyword' : search_keyword, 'time' : running_time})
+        return JsonResponse({'article': json_data, '긍정도':(100-negative), '부정도' : negative, 'keyword' : search_keyword, 'time' : running_time})
 
     else:  # 키워드에 해당하는 기사가 없을 경우
-        return JsonResponse({'reply' : f"죄송합니다. {search_keyword}에 해당하는 뉴스 기사를 찾을 수 없습니다. 카테고리 재설정 또는 검색 단어를 수정해주세요."})
+        return JsonResponse({'reply' : False})
 
 
 # 인기 검색어 조회
@@ -89,6 +95,7 @@ def newsScript(request):
         except User.DoesNotExist:
             return JsonResponse({'return': '일치하는 회원이 없습니다.'})
 
+
         try:
             mynews = MyNews.objects.get(newsid=news_id)
             return JsonResponse({'return': '스크립트 한 뉴스입니다.'})
@@ -96,6 +103,7 @@ def newsScript(request):
             mynews = MyNews.objects.create(newsid=news_id, title=article.title, link=article.link, img=article.img)
             mynews.user.add(user)
             return JsonResponse({"return": "성공"})
+        
 
 
 # 스크립트 한 기사 삭제하기
@@ -103,6 +111,7 @@ def newsScript(request):
 def MyNewsDelete(request, no):
     if request.method == 'DELETE':
         
+        print(no)
         mynews = MyNews.objects.get(id=no)
         
         try:
@@ -126,7 +135,8 @@ def MyNewsScript(request, no):
                 'id' : news.id,
                 'title': news.title,
                 'link': news.link,
-                'img': news.img
+                'img': news.img,
+                'time' : news.save_dt
             }
             result.append(news_dict)
         
@@ -137,9 +147,6 @@ def MyNewsScript(request, no):
 def realTimeRatio(request, day, hour):
     if request.method == 'GET':
         
-        # current_time = datetime.now()
-        # filter_time = current_time - timedelta(hours=1)
-        
         keyword_queryset = Keyword.objects.all()
         keyword_list = [keyword.keyword_text for keyword in keyword_queryset]
  
@@ -147,46 +154,34 @@ def realTimeRatio(request, day, hour):
             key_cate_articles = Article.objects.filter(create_dt__day=day, create_dt__hour=hour, detail__icontains=keyword)[20:30]
 
             if key_cate_articles:  # 키워드에 해당하는 기사가 있을 경우
-                fields = ['id', 'title','detail', 'link', 'img']
+                fields = ['sentiment']
                 article_list = list(key_cate_articles.values(*fields))
                 df = pd.DataFrame(article_list)
-
-                try:
-                    _, positive = process_news_keyword(df, keyword)
-                    negative = 100-positive
-                except:
-                    negative = -2
+            
+                positive_len = len(df[df['sentiment'] == 1])
+                negative_len = len(df[df['sentiment'] == -1])
+                negative_percentage = (negative_len/(positive_len+negative_len)) * 100
+                negative = round(negative_percentage, 1)
+            
             else:
-                negative = -1
-
+                negative = -2
+                
             # 부정도 최신화
             target_keyword = Keyword.objects.get(keyword_text=keyword)
             target_keyword.ratio = negative
             target_keyword.save()
             
             # NegativeKeywordInfo 객체 생성
-            if negative >= 0:
+            if negative != -2:
                 stock_code = target_keyword.code
                 price = utils.get_price(stock_code)
 
-                NegativeKeywordInfo.objects.create(keyword = target_keyword, 
-                                                   create_dt = timezone.now(), 
+                keywordinfo = NegativeKeywordInfo.objects.create(keyword = target_keyword, 
                                                    negative = negative, 
                                                    present = price,
                                                    )
-            
-            
-
-        # keyword_set = Keyword.objects.all()
-        # result = []
-        # for keyword in keyword_set:
-        #     keyword_dict = {
-        #         'keyword': keyword.keyword_text,
-        #         'negative_ratio': keyword.ratio
-        #     }
-        #     result.append(keyword_dict)
-            
-            
+                
+                keywordinfo.save()
         return JsonResponse({'return' : '성공'})
         
 
@@ -206,14 +201,31 @@ def myKeyword(request):
         except NegativeKeywordInfo.DoesNotExist:
             return JsonResponse({'return': '일치하는 키워드의 정보가 없습니다.'})
         
-        result_time = []
-        result_negative = []
-        result_present = []
+        # original
+        # result_time = []
+        # result_negative = []
+        # result_present = []
         
-        for negative_info in negative_info_list:
-            result_time.append(negative_info.create_dt)
-            result_negative.append(negative_info.negative)
-            result_present.append(negative_info.present)
+        # for negative_info in negative_info_list:
+        #     result_time.append(negative_info.create_dt)
+        #     result_negative.append(negative_info.negative)
+        #     result_present.append(negative_info.present)
+        
+        # test                
+        import datetime as dt
+        import pandas as pd
+        start_time = dt.datetime.strptime("2023-12-27T06:00:00", "%Y-%m-%dT%H:%M:%S")
+        end_time = dt.datetime.strptime("2023-12-27T18:00:00", "%Y-%m-%dT%H:%M:%S")
+        result_time = []
+        while start_time <= end_time:
+            result_time.append(start_time.strftime("%Y-%m-%dT%H:%M:%S"))
+            start_time += dt.timedelta(minutes=30)                        
+                
+        
+        import random
+        result_negative = [random.randint(1, 99) for _ in range(26)]
+        
+        result_present = [random.randint(50000, 60000) for _ in range(26)]
             
         return JsonResponse({'result_time' : result_time, 'result_negative' : result_negative, 'result_present':result_present})
 
@@ -236,6 +248,9 @@ def myKeyword(request):
 from django.core.serializers import serialize
 def search2222(request):
     print('*Start**Start***Start**Start*Start***Start**Start**Start**Start*')
+    
+    price = utils.get_price('035720')
+    print(price)
     
     search_keyword = '제약'
     search_category_list = ['사회', '경제']
@@ -266,12 +281,12 @@ def search2222(request):
         df = df.iloc[:10, :]
         # print(df)
         
-        result_df, postive = process_news_paragraph_kakao(df, search_keyword)
+        # result_df, postive = process_news_paragraph_kakao(df, search_keyword)
         
-        json_data = {
-        "긍정": result_df[result_df['sentiment'] == 1].to_dict(orient='records'),  
-        "부정": result_df[result_df['sentiment'] == 0].to_dict(orient='records'),
-        }
+        # json_data = {
+        # "긍정": result_df[result_df['sentiment'] == 1].to_dict(orient='records'),  
+        # "부정": result_df[result_df['sentiment'] == 0].to_dict(orient='records'),
+        # }
         
         # json_data = {
         # "긍정": df[df['id'] > 15000].to_dict(orient='records'),  
@@ -281,7 +296,8 @@ def search2222(request):
         end_time = datetime.now()
         running_time =  end_time - start_time
         print('running_time: ', running_time)
-        return JsonResponse({'article': json_data, '긍정도':postive, '부정도' : (100-postive), 'keyword' : search_keyword, 'time' : running_time})
+        # return JsonResponse({'카카오 현재가': price, '긍정도':postive, '부정도' : (100-postive), 'keyword' : search_keyword, 'time' : running_time})
+        return JsonResponse({'카카오 현재가': price,})
         
 
         
