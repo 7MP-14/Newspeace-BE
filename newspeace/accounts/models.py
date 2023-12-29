@@ -82,4 +82,11 @@ class NegativeKeywordInfo(models.Model):
     keyword = models.ForeignKey(Keyword, on_delete=models.CASCADE)
     create_dt = models.DateTimeField(default=timezone.now())
     negative = models.SmallIntegerField(default=0)
+    present = models.BigIntegerField(default=0)
+    
+    def __str__(self):
+        return str(self.keyword_id)
+
+
+    
 

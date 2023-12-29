@@ -17,4 +17,45 @@ def get_code_from_df_krx(name):
         return matching_row.iloc[0]['Code']
     else:
         return None  # 일치하는 데이터가 없을 경우 None 반환
+    
+
+import mojito
+import pprint
+
+# print(mojito.__version__)
+
+file_path2 = os.path.join(current_directory, 'static', 'api', 'koreainvestment.key')
+
+f = open(file_path2)
+lines = f.readlines()
+key = lines[0].strip()
+secret = lines[1].strip()
+acc_no = lines[2].strip()
+f.close()
+
+
+broker=mojito.KoreaInvestment(
+    api_key=key,
+    api_secret=secret,
+    acc_no=acc_no
+)
+
+# print(broker)
+
+# resp = broker.fetch_price("035720")
+ 
+def get_price(code):
+    if code==None:
+        present=0
+    else:
+        resp = broker.fetch_price(code)
+    # pprint.pprint(resp)
+    # print("Open:  ", resp['output']['stck_oprc'])  # 시가
+    # print("High : ", resp['output']['stck_hgpr'])  # 고가
+    # print("Low  : ", resp['output']['stck_lwpr'])  # 저가
+    # print("Close: ", resp['output']['stck_prpr'])  # 현재가&종가
+    
+        present = resp['output']['stck_prpr']
+    
+    return present
 
