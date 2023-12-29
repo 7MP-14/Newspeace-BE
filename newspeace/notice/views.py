@@ -8,13 +8,19 @@ from board.models import Board
 class NoticeListAPIView(ListAPIView):
     queryset = Board.objects.all()
     serializer_class = NoticeListSerializer
-    
-    # def get_serializer_context(self):
-    #     return {
-    #         'request' : None,
-    #         'format' : self.format_kwarg,
-    #         'view' : self
-    #     }
+
+    def get(self, request, *args, **kwargs):
+        # Board의 모든 레코드를 가져오기
+        all_boards = Board.objects.all()
+        #  각 레코드의 id를 초기화
+        for index, board in enumerate(all_boards, start=1):
+            board.delete()
+            board.id = index
+            board.save()
+
+        # 나머지 GET 메소드 로직을 계속 수행
+        return super().get(request, *args, **kwargs) 
+
     
     
 # class NoticeRetrieveAPIView(RetrieveAPIView):
