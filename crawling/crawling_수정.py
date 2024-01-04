@@ -8,9 +8,12 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
+import random
 
 # 기사를 크롤링하는 함수
 def crawling(category, start_time, today_date):
+    # print(f"{category} 카테고리 크롤링 시작 : {datetime.now()}")
+    
     items = []
     i = 1
     # while 4 > i:  # test용 반복
@@ -21,6 +24,9 @@ def crawling(category, start_time, today_date):
         dom = BeautifulSoup(response.text, 'lxml')  # html.parser -> lxml 속도 개선
         elements = dom.select('#mArticle > div.box_etc > ul > li')
         stop_check = False  # 크롤링 중단 여부 체크
+        
+        if not elements:    # 마지막 페이지까지 도달했을 경우 반복문 종료
+            break
 
         for j, element in enumerate(elements):
             link = element.select_one('.cont_thumb > .tit_thumb > .link_txt').get('href')
@@ -56,7 +62,7 @@ def detail(url):
         elements = dom.select('#mArticle > div.news_view.fs_type1 > div.article_view > section')[0]
         element = elements.find_all(attrs={'dmcf-ptype':'general'})
     except:
-        print("elements 불러오는데 실패했습니다.")
+        print("elements 불러오는데 실패했습니다.", url)
         return None, None
 
     detail = ''
@@ -80,6 +86,8 @@ def process_category(category, ago_time, ago_date, now_date):
             return pd.concat([crawling(category, '00:00', now_date),
                             crawling(category, ago_time, ago_date)])
 
+# 로그 작성용 난수 생성
+rand_num = random.randint(0, 100)
 
 # 시간 설정
 now = datetime.now()                        # 현재 datetime
@@ -93,6 +101,7 @@ ago_time = one_hour_ago.strftime("%H:%M")   # 1시간 전 시각
 
 
 # 크롤링 시작
+print(f"{rand_num} 크롤링 시작 : {now}")
 category_list = ['society', 'politics', 'economic', 'culture', 'entertain', 'sports', 'digital']
 
 
@@ -131,8 +140,14 @@ if __name__ == "__main__":
     category_map = {'society': '사회', 'politics': '정치', 'economic': '경제',
                         'culture': '문화', 'entertain': '연예', 'sports': '스포츠', 'digital': 'IT'}
     result_df.category = result_df.category.map(category_map)
-
+    print(rand_num, '기사 개수 :', len(result_df.category))
+    
     # 데이터프레임을 json 파일로 저장하기
     result_df.to_json(f'./result/crawling_{now.strftime("%Y-%m-%d_%H-%M")}.json', orient='records', force_ascii=False, indent=4)
     # 데이터프레임을 csv 파일로 저장하기
     result_df.to_csv(f'./result/crawling_{now.strftime("%Y-%m-%d_%H-%M")}.csv', index=False)
+    
+    # 크롤링 끝 
+    end_current_datetime = datetime.now()
+    print(f"{rand_num} 크롤링 끝 : {end_current_datetime}")
+    print(f"{rand_num} 걸린시간 : {end_current_datetime - now}")
