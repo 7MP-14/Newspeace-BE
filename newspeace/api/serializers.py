@@ -34,7 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'name', 'phone_number', 'emailNotice', 'smsNotice', 'keywords', 'is_email_verified','password', 'password2')
+        fields = ('id', 'email', 'name', 'emailNotice', 'keywords', 'is_email_verified','password', 'password2')
 
     
     def validate(self, data): # password과 password2의 일치 여부 확인
@@ -56,7 +56,6 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(
             email=validated_data['email'],
             name=validated_data['name'],
-            phone_number=validated_data['phone_number'],
         )
 
         user.set_password(validated_data['password'])

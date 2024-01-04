@@ -5,29 +5,25 @@ from django.utils import timezone
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, name, phone_number, emailNotice=None, smsNotice=None, password=None):
+    def create_user(self, email, name, emailNotice=None, password=None):
         if not email:
             raise ValueError('Users must have an email address')
 
         user = self.model(
             email=self.normalize_email(email),
             name=name,
-            phone_number=phone_number,
             emailNotice=emailNotice,
-            smsNotice=smsNotice,
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, name, phone_number, emailNotice, smsNotice, password):
+    def create_superuser(self, email, name, emailNotice, password):
         user = self.create_user(
             email,
             name=name,
-            phone_number=phone_number,
             emailNotice=emailNotice,
-            smsNotice=smsNotice,
         )
         user.is_admin = True
         user.save(using=self._db)
@@ -49,9 +45,7 @@ class User(AbstractBaseUser):
         unique=True,
     )
     name=models.CharField(max_length=20)
-    phone_number=models.CharField(max_length=20)
     emailNotice = models.BooleanField(null=True, blank=True, default=False)
-    smsNotice = models.BooleanField(null=True, blank=True, default=False)
     keywords = models.ManyToManyField(Keyword, blank=True)
     
     is_active = models.BooleanField(default=True)
@@ -61,7 +55,7 @@ class User(AbstractBaseUser):
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['name','phone_number','emailNotice','smsNotice']
+    REQUIRED_FIELDS = ['name','emailNotice']
 
     def __str__(self):
         return self.email

@@ -2,9 +2,7 @@
     <ul>
         <li> name : {{user}}</li>
         <li> email : {{user.name}}</li>
-        <li> tel : {{user.phone_number}}</li>
         <li>이메일 알림 받기:{{user.emailNotice}}</li>
-        <li>문자 알림 받기:{{user.smsNotice}}</li>
         <li>my 키워드:
             {% for keyword in user.keywords.all %}
                 {{ keyword.keyword_text }}
