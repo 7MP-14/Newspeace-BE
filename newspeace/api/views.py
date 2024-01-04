@@ -50,7 +50,15 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     def perform_update(self, serializer):
         # UserSerializer의 update 메서드를 호출하여 프로필 업데이트 수행
         serializer.update(serializer.instance, serializer.validated_data)
-
+        # print("bbb: ", serializer.update(serializer.instance, serializer.validated_data))  ## 디버깅
+        
+        # 추가: 사용자 이름, 이메일, 이메일 알림 여부 업데이트 로직
+        instance = serializer.instance
+        instance.name = self.request.data.get('name', instance.name)
+        instance.email = self.request.data.get('email', instance.email)
+        instance.emailNotice = self.request.data.get('emailNotice', instance.emailNotice)
+        instance.save()
+        
         # 추가: 키워드 업데이트 로직
         keywords_data = self.request.data.get('keywords', [])
         instance = serializer.instance
