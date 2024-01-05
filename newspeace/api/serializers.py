@@ -90,6 +90,12 @@ class UserSerializer(serializers.ModelSerializer):
         password = validated_data.get('password')
         if password:
             instance.set_password(password)
+            
+        # 사용자 이름, 이메일, 이메일 알림 여부 변경 처리
+        instance.name = validated_data.get('name', instance.name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.emailNotice = validated_data.get('emailNotice', instance.emailNotice)    
+        
         instance.save()
 
         return instance
