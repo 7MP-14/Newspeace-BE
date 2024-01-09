@@ -1,4 +1,4 @@
-# 실행 시각으로 부터 1시간 동안의 기사만 크롤링
+# 실행 시각으로 부터 30분 동안의 기사만 크롤링
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -8,9 +8,12 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
+import random
 
 # 기사를 크롤링하는 함수
 def crawling(category, start_time, today_date):
+    # print(f"{category} 카테고리 크롤링 시작 : {datetime.now()}")
+    
     items = []
     i = 1
     # while 4 > i:  # test용 반복
@@ -21,6 +24,9 @@ def crawling(category, start_time, today_date):
         dom = BeautifulSoup(response.text, 'lxml')  # html.parser -> lxml 속도 개선
         elements = dom.select('#mArticle > div.box_etc > ul > li')
         stop_check = False  # 크롤링 중단 여부 체크
+        
+        if not elements:    # 마지막 페이지까지 도달했을 경우 반복문 종료
+            break
 
         for j, element in enumerate(elements):
             link = element.select_one('.cont_thumb > .tit_thumb > .link_txt').get('href')
@@ -56,7 +62,7 @@ def detail(url):
         elements = dom.select('#mArticle > div.news_view.fs_type1 > div.article_view > section')[0]
         element = elements.find_all(attrs={'dmcf-ptype':'general'})
     except:
-        print("elements 불러오는데 실패했습니다.")
+        print("elements 불러오는데 실패했습니다.", url)
         return None, None
 
     detail = ''
@@ -80,19 +86,22 @@ def process_category(category, ago_time, ago_date, now_date):
             return pd.concat([crawling(category, '00:00', now_date),
                             crawling(category, ago_time, ago_date)])
 
+# 로그 작성용 난수 생성
+rand_num = random.randint(0, 100)
 
 # 시간 설정
 now = datetime.now()                        # 현재 datetime
-one_hour_ago = now - timedelta(hours=1)     # 1시간을 뺀 datetime
+thirty_minutes_ago = now - timedelta(minutes=30)     # 30분을 뺀 datetime
 
 now_date = now.strftime("%Y%m%d")           # 현재 날짜 
 now_time = now.strftime("%H:%M")            # 현재 시각
 
-ago_date = one_hour_ago.strftime("%Y%m%d")  # 1시간 전 날짜 
-ago_time = one_hour_ago.strftime("%H:%M")   # 1시간 전 시각
+ago_date = thirty_minutes_ago.strftime("%Y%m%d")  # 30분 전 날짜 
+ago_time = thirty_minutes_ago.strftime("%H:%M")   # 30분 전 시각
 
 
 # 크롤링 시작
+print(f"{rand_num} 크롤링 시작 : {now}")
 category_list = ['society', 'politics', 'economic', 'culture', 'entertain', 'sports', 'digital']
 
 
@@ -114,8 +123,31 @@ if __name__ == "__main__":
 
     # 모든 카테고리 결과를 하나의 데이터프레임으로 합치고 인덱스 초기화하기
     result_df = pd.concat(results, ignore_index=True)
+    
+    # 'detail' 컬럼을 기준으로 중복된 행 제거
+    pattern = r'\b([가-힣]+)\s기자\s='  # 한글 기자 이름 패턴
+    result_df['reporter_name'] = result_df['detail'].str.extract(pattern)
 
+    # 중복된 기자 이름을 가진 행을 제거하고 유일한 값을 남김
+    result_df = result_df.drop_duplicates(subset=['title', 'reporter_name'], keep='first')
+    result_df.drop(columns='reporter_name', inplace=True)
+
+    # 중복 제거 후 DataFrame을 다시 인덱스 재정렬
+    result_df = result_df.reset_index(drop=True)
+
+
+    # category 필드 한글 변경
+    category_map = {'society': '사회', 'politics': '정치', 'economic': '경제',
+                        'culture': '문화', 'entertain': '연예', 'sports': '스포츠', 'digital': 'IT'}
+    result_df.category = result_df.category.map(category_map)
+    print(rand_num, '기사 개수 :', len(result_df.category))
+    
     # 데이터프레임을 json 파일로 저장하기
     result_df.to_json(f'./result/crawling_{now.strftime("%Y-%m-%d_%H-%M")}.json', orient='records', force_ascii=False, indent=4)
     # 데이터프레임을 csv 파일로 저장하기
     result_df.to_csv(f'./result/crawling_{now.strftime("%Y-%m-%d_%H-%M")}.csv', index=False)
+    
+    # 크롤링 끝 
+    end_current_datetime = datetime.now()
+    print(f"{rand_num} 크롤링 끝 : {end_current_datetime}")
+    print(f"{rand_num} 걸린시간 : {end_current_datetime - now}")
