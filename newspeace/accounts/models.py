@@ -3,7 +3,6 @@ from django.conf import settings
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
 from django.utils import timezone
 
-
 class UserManager(BaseUserManager):
     def create_user(self, email, name, emailNotice=None, password=None):
         if not email:
@@ -32,8 +31,8 @@ class UserManager(BaseUserManager):
 # keyword 테이블 user와 n:m 관계이다.
 class Keyword(models.Model):
     keyword_text = models.CharField(max_length=255)
-    ratio = models.IntegerField(default=0) 
-    code = models.CharField(max_length=10, null=True)
+    ratio = models.IntegerField(default=0) # 임시로.. 추후에 긍/부 비율을 나타내야 하는 것에 따라 수정 필요./완료
+    # code = models.CharField(max_length=10, null=True)
     
     def __str__(self):
         return self.keyword_text
@@ -71,16 +70,14 @@ class User(AbstractBaseUser):
         return self.is_admin
 
 
-# keyword 테이블과 1:m 관계이다.
-class NegativeKeywordInfo(models.Model):
-    keyword = models.ForeignKey(Keyword, on_delete=models.CASCADE)
-    create_dt = models.DateTimeField(default=timezone.now())
-    negative = models.SmallIntegerField(default=0)
-    present = models.BigIntegerField(default=0)
+# # keyword 테이블과 1:m 관계이다.
+# class NegativeKeywordInfo(models.Model):
+#     keyword = models.ForeignKey(Keyword, on_delete=models.CASCADE)
+#     create_dt = models.DateTimeField(default=timezone.now)
+#     negative = models.SmallIntegerField(default=0)
+#     present = models.BigIntegerField(default=0)
     
-    def __str__(self):
-        return str(self.keyword_id)
+#     def __str__(self):
+#         return str(self.keyword_id) + str(self.keyword)
 
-
-    
 

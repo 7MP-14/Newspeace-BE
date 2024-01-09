@@ -17,21 +17,22 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.shortcuts import render
-from news.views import hot_keyword, myKeyword
-
+from news.views import hot_keyword
+from enterprise.views import Graph
 def index(request):
     return render(request,'main.html')
 
 urlpatterns = [
     path('',index),
     path('hot/', hot_keyword, name="hot_keyword"),
-    path('mykeyword/', myKeyword),
+    path('graph/', Graph, name='enterprise_graph'),
     path("admin/", admin.site.urls),
     path("accounts/", include('accounts.urls')),
     path("board/", include('board.urls')),
     path("news/", include('news.urls')),
     path("api/", include('api.urls')),
     path("notice/", include('notice.urls')),
+    path("enterprise/", include('enterprise.urls')),
 ]
 
 # media 인식할 수 있도록

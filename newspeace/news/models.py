@@ -13,6 +13,7 @@ class Article(models.Model):
     create_dt = models.DateTimeField(default=timezone.now)
     write_dt = models.DateTimeField(default=timezone.now)
     sentiment = models.IntegerField(default=0)
+    keywords = models.JSONField(default=list)
     
     # def __str__(self):
     #     return self.category

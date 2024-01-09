@@ -11,7 +11,7 @@ User = get_user_model()
 class KeywordSerializer(serializers.ModelSerializer):
     class Meta:
         model = Keyword
-        fields = ('id', 'keyword_text', 'ratio','code')
+        fields = ('id', 'keyword_text', 'ratio')
     extra_kwargs = {
         'keyword_text': {'write_only': True},
     }
@@ -60,7 +60,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         user.set_password(validated_data['password'])
         user.save()
-        token, created = Token.objects.get_or_create(user=user)
+        Token.objects.get_or_create(user=user)
 
         return user
     
@@ -76,7 +76,7 @@ class UserSerializer(serializers.ModelSerializer):
             keyword_text = keyword_data.get('keyword_text')
             if keyword_text:
                 try:
-                    keyword, created = Keyword.objects.get_or_create(keyword_text=keyword_text)
+                    keyword = Keyword.objects.get_or_create(keyword_text=keyword_text)
                     # 새로운 키워드를 추가
                     instance.keywords.add(keyword)
                 except Keyword.DoesNotExist:
@@ -90,11 +90,11 @@ class UserSerializer(serializers.ModelSerializer):
         password = validated_data.get('password')
         if password:
             instance.set_password(password)
-            
+        
         # 사용자 이름, 이메일, 이메일 알림 여부 변경 처리
         instance.name = validated_data.get('name', instance.name)
         instance.email = validated_data.get('email', instance.email)
-        instance.emailNotice = validated_data.get('emailNotice', instance.emailNotice)    
+        instance.emailNotice = validated_data.get('emailNotice', instance.emailNotice)
         
         instance.save()
 
