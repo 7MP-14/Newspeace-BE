@@ -25,21 +25,21 @@ import pprint as pp
 
 # print(mojito.__version__)
 
-# file_path2 = os.path.join(current_directory, 'static', 'api', 'koreainvestment.key')
+file_path2 = os.path.join(current_directory, 'static', 'api', 'koreainvestment.key')
 
-# f = open(file_path2)
-# lines = f.readlines()
-# key = lines[0].strip()
-# secret = lines[1].strip()
-# acc_no = lines[2].strip()
-# f.close()
+f = open(file_path2)
+lines = f.readlines()
+key = lines[0].strip()
+secret = lines[1].strip()
+acc_no = lines[2].strip()
+f.close()
 
 
-# broker=mojito.KoreaInvestment(
-#     api_key=key,
-#     api_secret=secret,
-#     acc_no=acc_no
-# )
+broker=mojito.KoreaInvestment(
+    api_key=key,
+    api_secret=secret,
+    acc_no=acc_no
+)
 
 # print(broker)
 

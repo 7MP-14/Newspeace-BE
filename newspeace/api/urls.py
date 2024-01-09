@@ -9,4 +9,3 @@ urlpatterns = [
     path('verify-email/', verify_email, name='verify-email'),
     path('send-verify-email/', send_verification_email,name='send-verification-email'),
 ]
-
