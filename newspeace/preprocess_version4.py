@@ -110,7 +110,7 @@ print(f"{rand_num} 모델링 시작: {start_current_datetime_model}")
 if not crawling_df.empty:
 
     # 모델링
-    df_model, middle_news = process_news_keyword(crawling_df)
+    df_model = process_news_keyword(crawling_df)
     
     print(rand_num, '기사 개수:', len(df_model.sentiment))
     
