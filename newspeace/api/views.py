@@ -5,19 +5,16 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from .permissions import CustomReadOnly
-
 from django.core.mail import send_mail
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
-import json
 from django.contrib.sessions.models import Session
-
 from .serializers import *
-
 from django.middleware.csrf import get_token
 
 from .utils import get_code_from_df_krx
+import json
 
 User = get_user_model()
 #회원가입
@@ -45,38 +42,22 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
     queryset = User.objects.all()
-    # print()
-    # print("aaaaaaaaa$$$$$$$$$$$$$$$$$$$$$$$$")
-    # print(serializer_class)  ## 디버깅
-    # print(permission_classes)
-    # print(queryset)
-    # print()
-    
-    # def get_object(self):
-    #     return self.request.user  # 현재 로그인한 사용자의 프로필만 가져오도록 수정
 
     def perform_update(self, serializer):
         # UserSerializer의 update 메서드를 호출하여 프로필 업데이트 수행
         serializer.update(serializer.instance, serializer.validated_data)
-        # print("bbbbbbbb")
-        # print(serializer.update(serializer.instance, serializer.validated_data))  ## 디버깅
         
         # 추가: 키워드 업데이트 로직
         keywords_data = self.request.data.get('keywords', [])
         instance = serializer.instance
-        # print("ccccccccccccc")
-        # print("keywords_data: ", keywords_data)  ## 디버깅
-        # print('instance: ', instance)
 
         for keyword_data in keywords_data:
             keyword_text = keyword_data.get('keyword_text')
             keyword_id = keyword_data.get('id')  # 추가: 키워드의 ID 가져오기
-            # print("ddd: ", keyword_text, keyword_id)  ## 디버깅
-            if keyword_text:
-                # code = get_code_from_df_krx(keyword_text)
-                # keyword, created = Keyword.objects.get_or_create(keyword_text=keyword_text, defaults={'code':code})
+            
+            if keyword_text:            
                 keyword, created = Keyword.objects.get_or_create(keyword_text=keyword_text)
-                # print("eee: ", code, keyword, created, sep="\t")  ## 디버깅
+    
                 if created or not instance.keywords.filter(keyword_text__iexact=keyword_text).exists():
                     instance.keywords.add(keyword)
         
@@ -115,12 +96,12 @@ def send_verification_email(request):
             request.session['verification_code'] = verification_code
             request.session.save()
             session_key=request.session.session_key
-            print("얌:",session_key)
+            # print("얌:",session_key)
             
             # 세션에 저장된 전체 데이터 출력
-            print("user_id:", request.session.get('user_id'))
-            print("verification_code:", request.session.get('verification_code'))
-            print("ㅇㅇㅇㅇㅇㅇㅇㅇEntire Session Data:", request.session.items())
+            # print("user_id:", request.session.get('user_id'))
+            # print("verification_code:", request.session.get('verification_code'))
+            # print("Entire Session Data:", request.session.items())
             return JsonResponse({'status': 'success', 'message': '이메일이 성공적으로 전송되었습니다. 이메일을 확인하세요.', 'key' : session_key})
 
         except json.JSONDecodeError:
@@ -156,7 +137,6 @@ def verify_email(request):
             
             # 이메일과 인증 코드를 비교
             if user_id == stored_user_id and verification_code == stored_verification_code:
-                print("여기가 잘 실행되나요?????????")
                 # User의 is_email_verified를 True로 변경
                 user = get_object_or_404(User, id=user_id)
                 user.is_email_verified = True

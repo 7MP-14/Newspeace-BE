@@ -1,9 +1,5 @@
 from django import forms
 from django.contrib.auth.forms import *
-from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import authenticate
-
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from .models import *
 from django.db.models import Q

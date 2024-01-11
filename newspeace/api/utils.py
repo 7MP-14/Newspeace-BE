@@ -1,6 +1,9 @@
 import os
 import pandas as pd
 from datetime import datetime
+import pprint as pp
+import mojito
+
 
 # 현재 스크립트 파일이 위치한 디렉토리
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -20,11 +23,6 @@ def get_code_from_df_krx(name):
         return None  # 일치하는 데이터가 없을 경우 None 반환
     
 
-import mojito
-import pprint as pp
-
-# print(mojito.__version__)
-
 file_path2 = os.path.join(current_directory, 'static', 'api', 'koreainvestment.key')
 
 f = open(file_path2)
@@ -40,10 +38,6 @@ broker=mojito.KoreaInvestment(
     api_secret=secret,
     acc_no=acc_no
 )
-
-# print(broker)
-
-# resp = broker.fetch_price("035720")
 
 
 def broker_run_once_daily():
@@ -64,11 +58,7 @@ def broker_run_once_daily():
                 return
 
             if last_run_date == today:
-                # print('run in broker_run_once_daily')
-                print("my_function has already run today. Exiting.")
-                return 
-            else:
-                print('run!!')
+                return
 
     else:
         today_date = datetime.today().date()
@@ -100,7 +90,6 @@ def broker_run_once_daily():
     return broker
 
  
- 
 def get_broker():
     current_directory = os.path.dirname(os.path.abspath(__file__))
     file_path2 = os.path.join(current_directory, 'static', 'api', 'koreainvestment.key')
@@ -122,72 +111,36 @@ def get_broker():
  
  
 def get_price(code, add=None):
-    # broker = broker_run_once_daily()
+    file_path2 = os.path.join(current_directory, 'static', 'api', 'koreainvestment.key')
 
-    # if broker:
-    #     print("get_price in utils")
-    #     print("my_function has already run today. Exiting.")
-    #     print()
-    #     pass
-    # else:
-    #     print("today run")
-    #     broker=mojito.KoreaInvestment(
-    #     api_key=key,
-    #     api_secret=secret,
-    #     acc_no=acc_no
-    #     )
+    with open(file_path2, 'r') as file:
+        key, secret, acc_no = [line.strip() for line in file.read().splitlines()]
 
-    # broker=mojito.KoreaInvestment(
-    #     api_key=key,
-    #     api_secret=secret,
-    #     acc_no=acc_no
-    #     )
     
-    try:
-        broker = get_broker()
-    except:
-        current_directory = os.path.dirname(os.path.abspath(__file__))
-        file_path2 = os.path.join(current_directory, 'static', 'api', 'koreainvestment.key')
-        
-        f = open(file_path2)
-        lines = f.readlines()
-        key = lines[0].strip()
-        secret = lines[1].strip()
-        acc_no = lines[2].strip()
-        f.close()
-    
-        broker=mojito.KoreaInvestment(
+    broker = mojito.KoreaInvestment(
         api_key=key,
         api_secret=secret,
         acc_no=acc_no
         )
     
+    resp = broker.fetch_price(code)
+    
+    
     if code==None:
         present = 0
         return [present]
-    else:
-        try:
-            resp = broker.fetch_price(code)
-        except:
-            broker=mojito.KoreaInvestment(
-            api_key=key,
-            api_secret=secret,
-            acc_no=acc_no
-            )
-            
-            resp = broker.fetch_price(code)
-              
+    else:                  
         present = resp['output']['stck_prpr']
         dod = resp['output']['prdy_vrss']  # 전일 대비 (DayofDay)
-        open = resp['output']['stck_oprc']  # 시가
+        open_ = resp['output']['stck_oprc']  # 시가
         high = resp['output']['stck_hgpr']  # 고가
         low = resp['output']['stck_lwpr']  # 저가
     
         if add:
             add = resp['output'][add]  # 추가 데이터
-            return present, dod, open, high, low, add
+            return present, dod, open_, high, low, add
     
-        return present, dod, open, high, low
+        return present, dod, open_, high, low
 
 
 

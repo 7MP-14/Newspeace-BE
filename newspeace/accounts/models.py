@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import (BaseUserManager, AbstractBaseUser)
-from django.utils import timezone
 
 class UserManager(BaseUserManager):
     def create_user(self, email, name, emailNotice=None, password=None):
@@ -31,7 +30,7 @@ class UserManager(BaseUserManager):
 # keyword 테이블 user와 n:m 관계이다.
 class Keyword(models.Model):
     keyword_text = models.CharField(max_length=255)
-    ratio = models.IntegerField(default=0)
+    ratio = models.IntegerField(default=0) 
     
     def __str__(self):
         return self.keyword_text
@@ -67,8 +66,6 @@ class User(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_admin
-
-
 
 
 
