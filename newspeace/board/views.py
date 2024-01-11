@@ -4,9 +4,6 @@ from .models import *
 from .forms import *
 from django.contrib.auth.decorators import user_passes_test
 
-def test1(request):
-    return HttpResponse('board/test1 응답!')
-
 
 # Board 전체 목록 보기
 def list(request):
@@ -43,7 +40,6 @@ def write(request):
             except:
                 board.image = None
             board.save()                                         # 추가 작업
-            # return HttpResponse('추가 작업 완료!')
             return redirect(board)                       # 요청 끝나고 '/board/id/' detail 페이지 실행
     else:
         form = BoardModelForm()                          # board/forms.py의 장고 Form을 HTML로 변환

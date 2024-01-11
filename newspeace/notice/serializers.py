@@ -8,12 +8,6 @@ class NoticeListSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
         
-# class NoticeRetrieveSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Board
-#         fields = '__all__'
-        
-        
 class NoticeDestroySerializer(serializers.ModelSerializer):
     class Meta:
         model = Board
