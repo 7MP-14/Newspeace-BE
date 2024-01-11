@@ -1,6 +1,6 @@
 from django.db import models
 from datetime import datetime, timedelta
-from django.utils import timezone  # test_0106_josephh
+from django.utils import timezone
 
 # Create your models here.
     
@@ -16,15 +16,7 @@ class EnterpriseGraph(models.Model):
     enterprise = models.ForeignKey(Enterprise, on_delete=models.PROTECT)
     negative = models.SmallIntegerField(default=0)
     present = models.BigIntegerField(default=0)
-    # create_dt = models.DateTimeField(default=datetime.now())
-    create_dt = models.DateTimeField(default=timezone.now)  # test_0106_josephh / 마이이그래션 해야 되는지??
+    create_dt = models.DateTimeField(default=timezone.now)
     
     def __str__(self):
         return str(self.enterprise)
-
-
-
-
-
-
-

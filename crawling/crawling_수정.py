@@ -84,14 +84,14 @@ def process_category(category, ago_time, ago_date, now_date):
                             crawling(category, ago_time, ago_date)])
 
 
-# db 연결
-con = create_engine("mysql+pymysql://admin:admin12345@joon-sql-db-1.cvtb5zj20jzi.ap-northeast-2.rds.amazonaws.com:3306/joon_db")
+# # db 연결
+# con = create_engine("mysql+pymysql://admin:admin12345@joon-sql-db-1.cvtb5zj20jzi.ap-northeast-2.rds.amazonaws.com:3306/joon_db")
 
-# db에 데이터 삭제
-with con.connect() as connection:
-    query = text("DELETE FROM news_temporalyarticle")
-    result = connection.execute(query)
-    connection.commit()
+# # db에 데이터 삭제
+# with con.connect() as connection:
+#     query = text("DELETE FROM news_temporalyarticle")
+#     result = connection.execute(query)
+#     connection.commit()
 
 
 
@@ -141,12 +141,11 @@ result_df = result_df.reset_index(drop=True)
 
 # Remove outliers
 alpha = 0.05
-low = result_df.detail.quantile(alpha)
-high = result_df.detail.quantile(1 - alpha)
-ret_trim = pd.DataFrame()
-ret_trim = result_df[(result_df.detail > low) & (result_df.detail < high)]
-
-result_df = ret_trim.reset_index(drop=True)
+result_df['text_length'] = result_df['detail'].apply(len)
+low = result_df['text_length'].quantile(alpha)
+high = result_df['text_length'].quantile(1 - alpha)
+ret_trim = result_df[(result_df['text_length'] > low) & (result_df['text_length'] < high)]
+result_df = ret_trim.drop(columns=['text_length']).reset_index(drop=True)
 
 
 # category 필드 한글 변경
@@ -160,8 +159,9 @@ end_current_datetime = datetime.now()
 
 print(rand_num, '기사 개수 :', len(result_df.category))
 
-# db 저장
-result_df.to_sql('news_article', con, if_exists='append', index=False)
+# # db 저장
+# result_df.to_sql('news_temporalyarticle', con, if_exists='append', index=False)
+
 print(f"{rand_num} 크롤링 끝 : {end_current_datetime}")
 print(f"{rand_num} 걸린시간 : {end_current_datetime - start_current_datetime}")
 

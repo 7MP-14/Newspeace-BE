@@ -15,8 +15,6 @@ class Article(models.Model):
     sentiment = models.IntegerField(default=0)
     keywords = models.JSONField(default=list)
     
-    # def __str__(self):
-    #     return self.category
     
     def __str__(self):
         return f"[{str(self.id)}]  {self.title[:40]}"

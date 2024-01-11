@@ -1,17 +1,14 @@
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import *
 from accounts.models import *
-from keyword_model import extract_and_assign_keywords
 from enterprise.models import *
 from api import utils
-
 import random
+from datetime import datetime
+from collections import Counter
 import pandas as pd
 import json
-from datetime import datetime, timedelta
-from collections import Counter
 
 
 # Create your views here.
@@ -51,7 +48,7 @@ def search(request):
         postitive = round((100-negative), 1)
         
         # 연관검색어 추출
-        def related_keyword_extraction(df,word):
+        def related_keyword_extraction(df):
             
             all_keywords = []
             for keywords in df.keywords:
@@ -66,14 +63,16 @@ def search(request):
             # 가장 많이 등장하는 상위 N개 키워드 추출
             top_n = 6
             topiclist = [item[0] for item in keyword_counter.most_common(top_n)]
-            topiclist.remove(word)
+            
+            if search_keyword in topiclist:
+                topiclist.remove(search_keyword)
             
             if len(topiclist) == 6:
                 topiclist = topiclist[:5]
             
             return topiclist
         
-        related_keyword = related_keyword_extraction(result_df, search_keyword)
+        related_keyword = related_keyword_extraction(result_df)
         
         
         target = ['keywords']
@@ -88,7 +87,6 @@ def search(request):
         "부정": negative_df.to_dict(orient='records'),
         }
         
-
         return JsonResponse({'article': json_data, '긍정도':postitive, '부정도' : negative, 'search_keyword' : search_keyword, 'related_keyword' : related_keyword})
 
     else:  # 키워드에 해당하는 기사가 없을 경우
@@ -113,15 +111,22 @@ def hot_keyword(request):
             
         all_keywords = []
         for article in articles:
-            all_keywords.extend(article.keywords)
+            if len(article.keywords) == 1:
+                all_keywords.extend(article.keywords[0])
+            else:
+                all_keywords.extend(article.keywords)
 
         # 각 키워드 별 기사 수 집계
         keyword_counter = Counter(all_keywords)
 
         # 가장 많이 등장하는 상위 N개 키워드 추출
         top_n = 5
-        topiclist = [item[0] for item in keyword_counter.most_common(top_n)]
+        topiclist = [item[0] for item in keyword_counter.most_common(top_n) if not str(item[0]).isdigit()]
         
+        if len(topiclist) < 5:
+            temp = 5 - len(topiclist)
+            temp = [item[0] for item in keyword_counter.most_common(temp) if not str(item[0]).isdigit()]
+            topiclist += temp
 
         matching_articles = {}
         for keyword in topiclist:
@@ -231,26 +236,6 @@ def realTimeRatio(request, day, hour):
         return JsonResponse({'return' : '성공'})
 
 
-# db 데이터 넣기
-def db_keyword(request):
-    start = datetime.now()
-    articles = Article.objects.all()[:5]
-    
-    fields = ['id', 'title','detail','keywords']
-    article_list = list(articles.values(*fields))
-    result_df = pd.DataFrame(article_list)
-    
-    df_news, kkk = extract_and_assign_keywords(result_df)
-    for id in df_news.id:
-        keywords_list = df_news.loc[df_news['id'] == id, 'keywords']
-        article = Article.objects.get(id=id)
-        article.keywords = list(keywords_list)
-        article.save()
-    end = datetime.now()
-    flow = end-start
-
-    return JsonResponse({'return': flow, 'kkk' : kkk})
-
 
 # 카카오 챗봇에 대한 응답 함수
 @csrf_exempt
@@ -284,20 +269,30 @@ def search_kakao(request):
             }
                 
         name = search_keyword
-        # target_keyword = Keyword.objects.get(keyword_text=keyword)
-        # stock_code = target_keyword.code
+        print('name')
+        print(name)
 
         try:
             enterprise_name = Enterprise.objects.get(name=name)    
             stock_code = enterprise_name.code
+            print("stock_code")
+            print(stock_code)
         except Enterprise.DoesNotExist:
-            return JsonResponse({'return': '일치하는 회사 이름이 없습니다.'})
+            print('일치하는 회사 이름이 없습니다.')
+            # return JsonResponse({'return': '일치하는 회사 이름이 없습니다.'})
+            return JsonResponse({"data": {'P': round((100-negative),1),
+                                      'N': negative,
+                                      'keyword': search_keyword,
+                                      },
+                             })
 
         if stock_code:
             addmi = utils.get_price(stock_code, 'prdy_ctrt')[-1]  # 등략
             result_add = search_keyword + '의 전일대비 등락률은' + addmi + '% 입니다.'
+            print(result_add)
         else:
             result_add =search_keyword + '의 주가정보가 없습니다 :('
+            print(result_add)
         
         return JsonResponse({"data": {'P': round((100-negative),1),
                                       'N': negative,

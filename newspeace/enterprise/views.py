@@ -1,51 +1,14 @@
 from django.http import JsonResponse
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from accounts.models import *
+from news.models import Article
 from .models import *
+from api import utils
 import pandas as pd
 import json
-from api import utils
-from news.models import Article
+
 # Create your views here.
 
-
-# 회사 코드 수정
-def enterpriseCode(request):
-    enterprises = Enterprise.objects.all()
-    for enterprise in enterprises:
-        str_code = str(enterprise.code)
-        if len(str_code) < 6:
-            num = 6-len(str_code)
-            str_codes = '0'*num + str_code
-            enterprise.code = str_codes
-            enterprise.save()
-            
-    return JsonResponse({'return' : 'good'})
-
-    
-# 회사 추가
-def enterpiseAdd(request):
-    df = pd.read_csv('kospi100.csv', encoding='euc-kr')
-    df_100 = df.iloc[:100,:]
-    
-    # df_100 = pd.read_csv('kospi100_2.csv', encoding='euc-kr')
-    
-    for df_list in list(df_100.values):
-        Enterprise.objects.get(name = df_list[0], code = df_list[1])
-        
-    return JsonResponse({'return' : 'good'})
-
-
-# 중복 회사 삭제
-def delete(request):
-    duplicates = Enterprise.objects.values('name').annotate(count_name=models.Count('name')).filter(count_name__gt=1)
-
-    for duplicate in duplicates:
-        name = duplicate['name']
-        Enterprise.objects.filter(name=name).exclude(id=Enterprise.objects.filter(name=name).earliest('id').id).delete()
-
-    return JsonResponse({'return' : 'good'})
 
 
 # 데이터 축적
@@ -55,7 +18,7 @@ def realTimeGraph(request, day, hour):
         name_list = [enterprise.name for enterprise in enterprise_queryset]
 
         for name in name_list:
-            enterprise_articles = Article.objects.filter(create_dt__day=day, create_dt__hour=hour, detail__icontains=name)
+            enterprise_articles = Article.objects.filter(create_dt__day=day, create_dt__hour=hour,detail__icontains=name)
 
             if enterprise_articles:  # 키워드에 해당하는 기사가 있을 경우
                 fields = ['sentiment']
@@ -75,7 +38,7 @@ def realTimeGraph(request, day, hour):
                 
             inst = Enterprise.objects.get(name=name)
             price = utils.get_price(inst.code)[0]
-            
+   
             keywordinfo = EnterpriseGraph.objects.create(enterprise=inst, negative=negative, present=price)
             keywordinfo.save()
                 
@@ -123,15 +86,6 @@ def Graph(request):
                 del result_time[index]
                 del result_negative[index]
                 del result_present[index]
-            
-            # print("test_0108")
-            # print(result_time[:-5])
-            # print(len(result_time))
-            # print(result_negative[:-5])
-            # print(len(result_negative))
-            # print(result_present[:-5])
-            # print(len(result_present))
-            # print()
                         
             stock_code = enterprise_name.code
             
@@ -154,8 +108,6 @@ def Graph(request):
         else:
             return JsonResponse({'return': '일치하는 회사의 정보가 없습니다.'})
         
-    # else:
-    #     return render(request, 'enterprise/come.html')
     
     
 def enterpriseList(request):
@@ -167,7 +119,3 @@ def enterpriseList(request):
             name_list.append(enterprise.name)
             
         return JsonResponse({'return' : name_list})
-    
-    
-    
-    
