@@ -3,13 +3,11 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from torch import nn
 import pandas as pd
 from sqlalchemy import create_engine
-from sqlalchemy.sql import text
 from mykeyword_graph import mykeyword_negative_update, enterprise_update
 from datetime import datetime, timedelta
 import random
 from keybert import KeyBERT
 from kiwipiepy import Kiwi
-from collections import Counter
 import json
 
 
@@ -53,16 +51,13 @@ def process_news_keyword(article):
         else:
             sentiment = 0  # 중립
             
-        # article.iloc[idx,'sentiment'] = sentiment
-
         sentiments_list.append(sentiment)
     
     article['sentiment'] = sentiments_list
 
-    middle_news = article[article['sentiment'] == 0]
     article_news = article[article['sentiment'] != 0]
 
-    return article_news, middle_news
+    return article_news
 
 # 키워드 추출 함수
 def extract_and_assign_keywords(data):
@@ -98,10 +93,9 @@ def filter_nouns(keywords):
         result = kiwi.analyze(keyword)
         for token, pos, _, _ in result[0][0]:
             # 한 글자가 아닌 명사와 외국어(SL)만을 선택하여 문자열에 추가
-            # if len(token) != 1 and (pos.startswith('N') or pos.startswith('SL')):
             if pos in {'NNG', 'NNP', 'NR', 'NP', 'SL', 'SH', 'SN'}:
                 text += token
-        if text:
+        if text and not text.isdigit(): # 숫자로만 이루어져있는지 검사
             # 생성된 문자열을 명사 목록에 추가
             nouns.add(text)
     return list(nouns)
@@ -119,7 +113,6 @@ if not crawling_df.empty:
     df_model, middle_news = process_news_keyword(crawling_df)
     
     print(rand_num, '기사 개수:', len(df_model.sentiment))
-    print(rand_num, '중립 기사 개수:', len(middle_news.sentiment))
     
     # # 키워드 추출
     
@@ -127,14 +120,11 @@ if not crawling_df.empty:
     print(f"{rand_num} 키워드 추출 시작: {half_current_datetime_model}")
     
     df_news = extract_and_assign_keywords(df_model)
-    
+    df_news['keywords'] = df_news['keywords'].apply(json.dumps)
     
     #결과 db 저장
     df_news.to_sql('news_article', con, if_exists='append', index=False)
     
-    # # 중립 기사 저장 / 확인용 코드 / 확인 완료 후 주석 처리 
-    # middle_hour = start_current_datetime_model.hour
-    # middle_news.to_csv(f'중립기사_{middle_hour}.csv')
 
 end_current_datetime_model = datetime.now()
 print(f"{rand_num} 모델링 끝: {end_current_datetime_model}")
@@ -156,7 +146,6 @@ time_to_delete = current_datetime - timedelta(days=7) + timedelta(hours=1)
 crwaling_day = start_current_datetime_model.day
 crwaling_hour = start_current_datetime_model.hour
 
-start2_current_datetime = datetime.now()
 
 response1 = mykeyword_negative_update(crwaling_day, crwaling_hour)
 response2 = enterprise_update(crwaling_day, crwaling_hour)
@@ -164,7 +153,7 @@ print(response1)
 print(response2)
 
 end2_current_datetime = datetime.now()
-
+print(f"{rand_num} 키워드 추출 끝: {end2_current_datetime}")
 
 
 
