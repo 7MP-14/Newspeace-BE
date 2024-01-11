@@ -12,8 +12,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
-# import db_info
-# db = db_info.DATABASES['default']
+import db_info
+import email_info
+
+key = db_info.KEY
+email = email_info.DATABASES['default']
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-g+rjzx(!!%q=1-58k#cf+$&79njc(@fy^ts*_mf=xjph0p7g9-"
+SECRET_KEY = key['secret_key']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -183,10 +187,10 @@ REST_FRAMEWORK = {
 }
 
 # SMTP EMAIL gmail 계정
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
+EMAIL_BACKEND = email['email_backend']
+EMAIL_HOST = email['email_host']
+EMAIL_USE_TLS = email['email_use_tls']
+EMAIL_PORT = email['email_port']
+EMAIL_HOST_USER = email['email_host_user']
+EMAIL_HOST_PASSWORD = email['email_host_password']
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
