@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from .serializers import *
-from rest_framework.generics import ListAPIView, CreateAPIView, DestroyAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateAPIView, DestroyAPIView
 from board.models import Board
 
 
@@ -33,6 +33,13 @@ class NoticeCreateAPIView(CreateAPIView):
         response["Access-Control-Allow-Origin"] = "http://localhost:3000"
         response["Access-Control-Allow-Credentials"] = "true"
         return response
+
+
+# 게시글 수정
+class NoticeRetrieveUpdateAPIView(RetrieveUpdateAPIView):
+    queryset = Board.objects.all()
+    serializer_class = NoticeListSerializer
+
     
 # 게시글 삭제
 class NoticeDestroyAPIView(DestroyAPIView):
