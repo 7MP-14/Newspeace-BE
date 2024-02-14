@@ -55,9 +55,7 @@ def process_news_keyword(article):
     
     article['sentiment'] = sentiments_list
 
-    article_news = article[article['sentiment'] != 0]
-
-    return article_news
+    return article
 
 # 키워드 추출 함수
 def extract_and_assign_keywords(data):

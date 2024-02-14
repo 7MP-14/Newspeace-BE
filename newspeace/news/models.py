@@ -4,6 +4,20 @@ from accounts.models import User
 from django.utils import timezone
 
 
+# class BigMedia(models.Model):
+#     name = models.CharField(max_length=100)
+    
+#     def __str__(self):
+#         return self.name
+
+# class SmallMedia(models.Model):
+#     name = models.CharField(max_length=100)
+#     bigmedia = models.ForeignKey(BigMedia, on_delete=models.CASCADE)
+    
+#     def __str__(self):
+#         return self.name
+    
+    
 class Article(models.Model):
     title = models.TextField()
     detail = models.TextField()
@@ -14,14 +28,17 @@ class Article(models.Model):
     write_dt = models.DateTimeField(default=timezone.now)
     sentiment = models.IntegerField(default=0)
     keywords = models.JSONField(default=list)
+    # smallmedia = models.ForeignKey(SmallMedia, on_delete=models.PROTECT)
     
     
     def __str__(self):
         return f"[{str(self.id)}]  {self.title[:40]}"
     
+    
 class KeywordCount(models.Model):
     name = models.CharField(max_length=100)
     count = models.IntegerField(default=0)
+    
     
 class MyNews(models.Model):
     user = models.ManyToManyField(User)
@@ -31,6 +48,7 @@ class MyNews(models.Model):
     img = models.URLField()
     save_dt = models.DateTimeField(default=timezone.now)
     
+    
 class TemporalyArticle(models.Model):
     title = models.TextField()
     detail = models.TextField()
@@ -39,4 +57,6 @@ class TemporalyArticle(models.Model):
     img = models.URLField()
     create_dt = models.DateTimeField(default=timezone.now)
     write_dt = models.DateTimeField(default=timezone.now)
+    
+
     
