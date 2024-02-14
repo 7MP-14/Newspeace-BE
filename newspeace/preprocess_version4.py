@@ -9,10 +9,13 @@ import random
 from keybert import KeyBERT
 from kiwipiepy import Kiwi
 import json
+import db_info
 
+
+db = db_info.DATABASES['default']
 
 # db 연결
-con = create_engine("mysql+pymysql://admin:admin12345@joon-sql-db-1.cvtb5zj20jzi.ap-northeast-2.rds.amazonaws.com:3306/joon_db")
+con = create_engine(f"mysql+pymysql://{db['USER']}:{db['PASSWORD']}@{db['HOST']}:{db['PORT']}/{db['NAME']}")
 
 # 임시 db 데이터 받아오기
 query = "SELECT * FROM news_temporalyarticle" 

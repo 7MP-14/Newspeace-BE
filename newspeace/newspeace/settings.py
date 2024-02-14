@@ -15,6 +15,7 @@ from pathlib import Path
 import db_info
 import email_info
 
+db = db_info.DATABASES['default']
 key = db_info.KEY
 email = email_info.DATABASES['default']
 
