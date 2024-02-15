@@ -4,18 +4,18 @@ from accounts.models import User
 from django.utils import timezone
 
 
-# class BigMedia(models.Model):
-#     name = models.CharField(max_length=100)
+class BigMedia(models.Model):
+    name = models.CharField(max_length=100)
     
-#     def __str__(self):
-#         return self.name
+    def __str__(self):
+        return self.name
 
-# class SmallMedia(models.Model):
-#     name = models.CharField(max_length=100)
-#     bigmedia = models.ForeignKey(BigMedia, on_delete=models.CASCADE)
+class SmallMedia(models.Model):
+    name = models.CharField(max_length=100)
+    bigmedia = models.ForeignKey(BigMedia, on_delete=models.CASCADE)
     
-#     def __str__(self):
-#         return self.name
+    def __str__(self):
+        return self.name
     
     
 class Article(models.Model):
@@ -28,7 +28,7 @@ class Article(models.Model):
     write_dt = models.DateTimeField(default=timezone.now)
     sentiment = models.IntegerField(default=0)
     keywords = models.JSONField(default=list)
-    # smallmedia = models.ForeignKey(SmallMedia, on_delete=models.PROTECT)
+    smallmedia = models.ForeignKey(SmallMedia, default=4, on_delete=models.PROTECT)
     
     
     def __str__(self):
@@ -57,6 +57,7 @@ class TemporalyArticle(models.Model):
     img = models.URLField()
     create_dt = models.DateTimeField(default=timezone.now)
     write_dt = models.DateTimeField(default=timezone.now)
+    media = models.CharField(max_length=50, default='daum')
     
 
     

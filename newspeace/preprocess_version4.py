@@ -18,9 +18,18 @@ db = db_info.DATABASES['default']
 con = create_engine(f"mysql+pymysql://{db['USER']}:{db['PASSWORD']}@{db['HOST']}:{db['PORT']}/{db['NAME']}")
 
 # 임시 db 데이터 받아오기
-query = "SELECT * FROM news_temporalyarticle" 
+query = "SELECT * FROM news_temporalyarticle"
 crawling_df = pd.read_sql(query, con)
-crawling_df.drop(columns='id', inplace=True)
+crawling_df.drop(columns=['id'], inplace=True)
+
+query_media = "SELECT `id`, `name` FROM news_smallmedia"
+media_dict = pd.read_sql(query_media, con).to_dict(orient='records')
+
+media_map = {}
+media_map.update({item['name']: item['id'] for item in media_dict})
+
+crawling_df.media = crawling_df.media.map(media_map)
+crawling_df.rename(columns={'media' : 'smallmedia_id'}, inplace=True)
 
 
 # 감정분석 모델링 함수
