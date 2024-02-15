@@ -9,4 +9,6 @@ urlpatterns = [
     path('realtimeratio/<int:day>/<int:hour>/', views.realTimeRatio),
     path('delete/<int:no>/', views.MyNewsDelete),
     path('kakao-news/', views.search_kakao),
+    path('todayNews/', views.todayNewsCnt),
+    path('listnews/', views.listNews),
 ]
