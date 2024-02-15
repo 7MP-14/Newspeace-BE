@@ -48,8 +48,13 @@ def search(request):
         all_len = len(result_df.sentiment)
         
         negative = (negative_len/all_len) * 100
+        negative = round(negative, 2)
+        
         positive = (positive_len/all_len) * 100
+        positive = round(positive, 2)
+        
         neutral = (neutral_len/all_len) * 100
+        neutral = round(neutral, 2)
         
         # 연관검색어 추출
         def related_keyword_extraction(df):
@@ -110,7 +115,7 @@ def hot_keyword(request):
         time_now = datetime.now()
         articles = Article.objects.filter(create_dt__day=time_now.day, create_dt__hour=time_now.hour)
         if not articles:
-            now_hour_ago = time_now - timezone.timedelta(hours=1)
+            now_hour_ago = time_now - timezone.timedelta(hours=5)
             articles = Article.objects.filter(create_dt__day=now_hour_ago.day, create_dt__hour=now_hour_ago.hour)
             
         all_keywords = []
@@ -315,3 +320,39 @@ def search_kakao(request):
         return JsonResponse({'reply' : False})
 
 
+def todayNewsCnt(request):
+    if request.method == 'GET':
+        time_now = datetime.now()
+        format_time = time_now.strftime('%Y년 %m월 %d일')
+        articles = Article.objects.filter(write_dt__day=time_now.day)
+        
+        if articles:
+            fields = ['id', 'category']
+            article_list = list(articles.values(*fields))
+            result_df = pd.DataFrame(article_list)
+            
+            result_dict = result_df.category.value_counts(normalize=True).apply(lambda x: round(x * 100,1)).to_dict()
+
+            newsCnt = len(result_df.id)
+            
+            return JsonResponse({'return' : result_dict, 'cnt' : newsCnt, 'date' : format_time})
+        
+        else:  # 키워드에 해당하는 기사가 없을 경우
+            return JsonResponse({'return' : False})
+
+
+def listNews(request):
+    if request.method == 'GET':
+        time_now = datetime.now()
+
+        articles = Article.objects.filter(write_dt__day=time_now.day)
+        
+        if articles:
+            fields = ['id', 'title', 'detail' ,'category', 'link', 'img', 'write_dt']
+            article_list = list(articles.values(*fields))
+            result_dict = pd.DataFrame(article_list).to_dict(orient='records')
+           
+            return JsonResponse({'return' : result_dict})
+        
+        else:  # 키워드에 해당하는 기사가 없을 경우
+            return JsonResponse({'return' : False}) 

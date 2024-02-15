@@ -3,19 +3,17 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from torch import nn
 import pandas as pd
 from sqlalchemy import create_engine
+from sqlalchemy.sql import text
 from mykeyword_graph import mykeyword_negative_update, enterprise_update
 from datetime import datetime, timedelta
 import random
 from keybert import KeyBERT
 from kiwipiepy import Kiwi
 import json
-import db_info
 
-
-db = db_info.DATABASES['default']
 
 # db 연결
-con = create_engine(f"mysql+pymysql://{db['USER']}:{db['PASSWORD']}@{db['HOST']}:{db['PORT']}/{db['NAME']}")
+con = create_engine("mysql+pymysql://admin:admin12345@joon-sql-db-1.cvtb5zj20jzi.ap-northeast-2.rds.amazonaws.com:3306/joon_db")
 
 # 임시 db 데이터 받아오기
 query = "SELECT * FROM news_temporalyarticle"
@@ -30,7 +28,6 @@ media_map.update({item['name']: item['id'] for item in media_dict})
 
 crawling_df.media = crawling_df.media.map(media_map)
 crawling_df.rename(columns={'media' : 'smallmedia_id'}, inplace=True)
-
 
 # 감정분석 모델링 함수
 def process_news_keyword(article):
@@ -66,8 +63,16 @@ def process_news_keyword(article):
         sentiments_list.append(sentiment)
     
     article['sentiment'] = sentiments_list
+    
+    
+    # 중립 추가 시, 키워드 분류+형태소 분석 에서 시간이 너무 많이 걸려서 일단 필터링 추가
+    positive_articles = article[article['sentiment'] == 1].head(60)
+    negative_articles = article[article['sentiment'] == -1].head(60)
+    neutral_articles = article[article['sentiment'] == 0].head(60)
 
-    return article
+    new_df = pd.concat([positive_articles, negative_articles, neutral_articles])
+
+    return new_df
 
 # 키워드 추출 함수
 def extract_and_assign_keywords(data):
@@ -143,13 +148,13 @@ print(f"{rand_num} 모델링 끝: {end_current_datetime_model}")
 
 # 현재 시간으로부터 2일 전의 시간 계산
 current_datetime = datetime.now()
-time_to_delete = current_datetime - timedelta(days=7) + timedelta(hours=1)
+time_to_delete = current_datetime - timedelta(days=14) + timedelta(hours=1)
 
 # db에 데이터 삭제
-# with con.connect() as connection:
-#     query = text("DELETE FROM news_article WHERE CREATE_DT < :time_to_delete")
-#     result = connection.execute(query, {"time_to_delete" : time_to_delete})
-#     connection.commit()
+with con.connect() as connection:
+    query = text("DELETE FROM news_article WHERE CREATE_DT < :time_to_delete")
+    result = connection.execute(query, {"time_to_delete" : time_to_delete})
+    connection.commit()
     
 
 # 구독 키워드 부정도 업데이트 및 데이터 축적

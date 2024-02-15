@@ -9,6 +9,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 from functools import partial
 import random
+from crawling_kbs import kbs
+from crawling_donga import donga
+from crawling_times import times
+from crawling_joongang import joongang
+
+
+
+
 
 # 기사를 크롤링하는 함수
 def crawling(category, start_time, today_date):
@@ -39,7 +47,8 @@ def crawling(category, start_time, today_date):
                     'link': link,
                     'img': img,
                     'create_dt' : datetime.now(),                                              # 크롤링된 시간
-                    'write_dt' : datetime.strptime(today_date + " " + time, "%Y%m%d %H:%M")   # 기사 작성 시간
+                    'write_dt' : datetime.strptime(today_date + " " + time, "%Y%m%d %H:%M"),   # 기사 작성 시간,
+                    'media' : 'daum'
                 })
             # 기준 시간(start_time) 이전에 작성된 기사인 경우
             else:
@@ -153,14 +162,30 @@ category_map = {'society': '사회', 'politics': '정치', 'economic': '경제',
                     'culture': '문화', 'entertain': '연예', 'sports': '스포츠', 'digital': 'IT'}
 result_df.category = result_df.category.map(category_map)
 
+# kbs 기사 크롤링
+kbs_df = kbs()
+
+# donga 기사 크롤링
+donga_df = donga()
+
+# times 기사 크롤링
+times_df = times()
+
+# 중앙일보 기사 크롤링
+joongang_df = joongang()
+
+
+result_df_total = pd.concat([kbs_df, donga_df, times_df, joongang_df, result_df])
+
+
 # 크롤링 끝 
 end_current_datetime = datetime.now()
 
 
-print(rand_num, '기사 개수 :', len(result_df.category))
+print(rand_num, '기사 개수 :', len(result_df_total.category))
 
 # db 저장
-result_df.to_sql('news_temporalyarticle', con, if_exists='append', index=False)
+result_df_total.to_sql('news_temporalyarticle', con, if_exists='append', index=False)
 
 print(f"{rand_num} 크롤링 끝 : {end_current_datetime}")
 print(f"{rand_num} 걸린시간 : {end_current_datetime - start_current_datetime}")
