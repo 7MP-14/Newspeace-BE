@@ -41,21 +41,47 @@ def search(request):
         fields = ['id', 'title','detail', 'link', 'img', 'write_dt', 'sentiment', 'keywords']
         article_list = list(key_cate_articles.values(*fields))
         result_df = pd.DataFrame(article_list)
+        
+        
+        result_df_t = result_df.copy()
+        result_df_t.write_dt = result_df_t.write_dt.apply(lambda x: x.strftime('%Y-%m-%d'))
+        
+        
+        date_list = list(result_df_t.sort_values('write_dt').write_dt.unique())
 
-        positive_len = len(result_df[result_df['sentiment'] == 1])
-        negative_len = len(result_df[result_df['sentiment'] == -1])
-        neutral_len = len(result_df[result_df['sentiment'] == 0])
-        all_len = len(result_df.sentiment)
+        weights = [idx + 1 for idx, _ in enumerate(date_list)]
+
+        # 각 날짜별 가중치를 데이터프레임에 추가
+        result_df_t['weight'] = result_df_t['write_dt'].map(dict(zip(date_list, weights)))
+
+        # 각 날짜별 가중치를 이용하여 감성별 카운트 계산
+        sentiment_counts = result_df_t.groupby(['write_dt', 'sentiment']).size().unstack(fill_value=0)
+        sentiment_counts_dict = sentiment_counts.to_dict(orient='records')
+
+        weights_zip = zip(weights, sentiment_counts_dict)
+        for weight, sentiment in weights_zip:
+            for key, val in sentiment.items():
+                sentiment[key] = val * weight
+
+        result = pd.DataFrame(sentiment_counts_dict)
         
-        negative = (negative_len/all_len) * 100
-        negative = round(negative, 2)
+        columns = list(result.columns)
+
+        items = {}
+        for i in columns:
+            items.update({
+                i : result[i].sum()})
         
-        positive = (positive_len/all_len) * 100
-        positive = round(positive, 2)
-        
-        neutral = (neutral_len/all_len) * 100
-        neutral = round(neutral, 2)
-        
+        positive_len = items[1]
+        negative_len = items[-1]
+        neutral_len = items[0]
+        total_len = positive_len + negative_len + neutral_len
+
+        # 감성 비율 계산
+        positive = round((positive_len / total_len) * 100, 2)
+        negative = round((negative_len / total_len) * 100, 2)
+        neutral = round((neutral_len / total_len) * 100, 2)
+
         # 연관검색어 추출
         def related_keyword_extraction(df):
             all_keywords = []
@@ -115,7 +141,7 @@ def hot_keyword(request):
         time_now = datetime.now()
         articles = Article.objects.filter(create_dt__day=time_now.day, create_dt__hour=time_now.hour)
         if not articles:
-            now_hour_ago = time_now - timezone.timedelta(hours=5)
+            now_hour_ago = time_now - timezone.timedelta(hours=1)
             articles = Article.objects.filter(create_dt__day=now_hour_ago.day, create_dt__hour=now_hour_ago.hour)
             
         all_keywords = []
@@ -162,6 +188,7 @@ def hot_keyword(request):
                 {
                     'title': article.title,
                     'link' : article.link,
+                    'img' : article.img
                 }
                 for article in random_articles
             ]
