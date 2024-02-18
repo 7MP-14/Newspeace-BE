@@ -2,7 +2,8 @@ from django.db import models
 from django.urls import reverse
 from accounts.models import User  # accounts 앱에 있는 모델 import
 
-class Board(models.Model):   # 테이블 명은 '앱이름_모델명소문자' 로 만들어짐. 
+class Board(models.Model):   # 테이블 명은 '앱이름_모델명소문자' 로 만들어짐.
+    number = models.PositiveSmallIntegerField(blank=True)   # 게시글 번호
     title = models.CharField(max_length=60)            # 제목
     body = models.TextField()                           # 본문
     image= models.ImageField(upload_to='notice/', blank=True, null=True) # 이미지
