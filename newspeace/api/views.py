@@ -60,6 +60,22 @@ class ProfileView(generics.RetrieveUpdateAPIView):
     
                 if created or not instance.keywords.filter(keyword_text__iexact=keyword_text).exists():
                     instance.keywords.add(keyword)
+
+# 유저 탈퇴
+class UserProfileDeleteAPIView(generics.DestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserDeleteSerializer
+    permission_classes = [AllowAny]
+
+    def delete(self, request, *args, **kwargs):
+        user = self.get_object()
+        password = request.data.get('password')
+        if not password:
+            return Response({"error": "Password is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not user.check_password(password):
+            return Response({"error": "Incorrect password."}, status=status.HTTP_400_BAD_REQUEST)
+        user.delete()
+        return Response({"message": "회원탈퇴가 완료되었습니다."}, status=status.HTTP_204_NO_CONTENT)
         
 # 프로필 유저 키워드 삭제
 class KeywordDeleteView(generics.UpdateAPIView):
