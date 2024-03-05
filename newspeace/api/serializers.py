@@ -99,11 +99,22 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
-    
+      
 # 유저의 특정 키워드 삭제
 class KeywordDeleteSerializer(serializers.Serializer):
     keyword_ids = serializers.ListField(child=serializers.IntegerField(), required=True)
 
+# 유저 탈퇴
+class UserDeleteSerializer(serializers.Serializer):
+    password = serializers.CharField(
+        required=True,
+        write_only=True,
+        help_text="Your password for confirmation."
+    )
+
+    def validate_password(self, value):
+        return value
+    
 #로그인
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
