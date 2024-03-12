@@ -4,5 +4,6 @@ from . import views
 
 urlpatterns = [
     path('', views.enterpriseList, name='enterprise_list_name'),
-    path('realtimegraph/<int:day>/<int:hour>/', views.realTimeGraph),
+    # path('realtimegraph/<int:day>/<int:hour>/', views.realTimeGraph),
+    path('stock_test/', views.Graph),
 ]

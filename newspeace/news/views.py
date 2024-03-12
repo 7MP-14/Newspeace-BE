@@ -136,7 +136,8 @@ def hot_keyword(request):
         hot_keyword = []
         
         for i in keywords:
-            hot_keyword.append(i.name)
+            if i != 0:
+                hot_keyword.append(i.name)
         
         time_now = datetime.now()
         articles = Article.objects.filter(create_dt__day=time_now.day, create_dt__hour=time_now.hour)
@@ -255,36 +256,36 @@ def MyNewsScript(request, no):
 
 
 # 구독 키워드 부정도 최신화
-def realTimeRatio(request, day, hour):
-    if request.method == 'GET':
-        keyword_queryset = Keyword.objects.all()
-        keyword_list = [keyword.keyword_text for keyword in keyword_queryset]
+# def realTimeRatio(request, day, hour):
+#     if request.method == 'GET':
+#         keyword_queryset = Keyword.objects.all()
+#         keyword_list = [keyword.keyword_text for keyword in keyword_queryset]
 
-        for keyword in keyword_list:
-            key_cate_articles = Article.objects.filter(create_dt__day=day, create_dt__hour=hour, detail__icontains=keyword)
+#         for keyword in keyword_list:
+#             key_cate_articles = Article.objects.filter(create_dt__day=day, create_dt__hour=hour, detail__icontains=keyword)
 
-            if key_cate_articles:  # 키워드에 해당하는 기사가 있을 경우
-                fields = ['sentiment']
-                article_list = list(key_cate_articles.values(*fields))
-                df = pd.DataFrame(article_list)
+#             if key_cate_articles:  # 키워드에 해당하는 기사가 있을 경우
+#                 fields = ['sentiment']
+#                 article_list = list(key_cate_articles.values(*fields))
+#                 df = pd.DataFrame(article_list)
             
-                positive_len = len(df[df['sentiment'] == 1])
-                negative_len = len(df[df['sentiment'] == -1])
+#                 positive_len = len(df[df['sentiment'] == 1])
+#                 negative_len = len(df[df['sentiment'] == -1])
                 
-                if negative_len != 0:
-                    negative_percentage = (negative_len/(positive_len+negative_len)) * 100
-                    negative = round(negative_percentage, 1)
-                else:
-                    negative = 0
-            else:
-                negative = 0    
+#                 if negative_len != 0:
+#                     negative_percentage = (negative_len/(positive_len+negative_len)) * 100
+#                     negative = round(negative_percentage, 1)
+#                 else:
+#                     negative = 0
+#             else:
+#                 negative = 0    
                 
-            # 부정도 최신화
-            target_keyword = Keyword.objects.get(keyword_text=keyword)
-            target_keyword.ratio = negative
-            target_keyword.save()
+#             # 부정도 최신화
+#             target_keyword = Keyword.objects.get(keyword_text=keyword)
+#             target_keyword.ratio = negative
+#             target_keyword.save()
      
-        return JsonResponse({'return' : '성공'})
+#         return JsonResponse({'return' : '성공'})
     
 
 # 카카오 챗봇에 대한 응답 함수
@@ -377,7 +378,7 @@ def listNews(request):
         if articles:
             fields = ['id', 'title', 'detail' ,'category', 'link', 'img', 'write_dt']
             article_list = list(articles.values(*fields))
-            result_dict = pd.DataFrame(article_list).to_dict(orient='records')
+            result_dict = pd.DataFrame(article_list).to_dict(orient='records')[:10]
            
             return JsonResponse({'return' : result_dict})
         
