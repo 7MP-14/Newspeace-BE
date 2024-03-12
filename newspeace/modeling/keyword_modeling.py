@@ -16,7 +16,7 @@ sql_db = DATABASES['default']
 mongo_db = MONGO_DATABASES['default']
     
     
-client = MongoClient(f'mongodb://{mongo_db['USER']}:{mongo_db['PASSWORD']}@{mongo_db['HOST']}:{mongo_db['PORT']}/{mongo_db['NAME']}')
+client = MongoClient(f"mongodb://{mongo_db['USER']}:{mongo_db['PASSWORD']}@{mongo_db['HOST']}:{mongo_db['PORT']}/{mongo_db['NAME']}")
 collection = client.newspeace.articles
 collection_articles = list(collection.find())
 crawling_df = pd.DataFrame(collection_articles)

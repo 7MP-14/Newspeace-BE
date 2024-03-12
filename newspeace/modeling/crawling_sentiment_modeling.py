@@ -16,7 +16,7 @@ sys.path.append('../')  # 상위 폴더를 모듈 검색 경로에 추가
 
 from mongodb_info import MONGO_DATABASES
 mongo_db = MONGO_DATABASES['default']
-client = MongoClient(f'mongodb://{mongo_db['USER']}:{mongo_db['PASSWORD']}@{mongo_db['HOST']}:{mongo_db['PORT']}/{mongo_db['NAME']}')
+client = MongoClient(f"mongodb://{mongo_db['USER']}:{mongo_db['PASSWORD']}@{mongo_db['HOST']}:{mongo_db['PORT']}/{mongo_db['NAME']}")
 
 db = client.newspeace
 db.drop_collection('articles')
